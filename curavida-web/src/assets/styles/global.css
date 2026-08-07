@@ -1,0 +1,10 @@
+body {
+       background: var(--color-background);
+       color: var(--color-text);
+       font-family: var(--font-primary);
+       -webkit-font-smoothing: antialiased;
+}
+
+#app {
+       min-height: 100vh;
+}
