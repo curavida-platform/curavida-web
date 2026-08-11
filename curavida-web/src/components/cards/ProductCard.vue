@@ -11,9 +11,9 @@ defineProps({
   <article class="product-card">
     <div class="product-image">
       <img
-        v-if="product.image"
-        :src="product.image"
-        :alt="product.name"
+        v-if="product.images?.length"
+        :src="product.images[0].url"
+        :alt="product.images[0].alt || product.name"
       />
 
       <span v-else>Produto</span>
@@ -21,16 +21,20 @@ defineProps({
 
     <div class="product-info">
       <span class="product-category">
-        {{ product.category }}
+        {{ product.category?.name }}
       </span>
 
-      <h3>{{ product.name }}</h3>
+      <h3>
+        {{ product.name }}
+      </h3>
 
-      <p>{{ product.description }}</p>
+      <p>
+        {{ product.description || 'Produto CuraVida.' }}
+      </p>
 
       <div class="product-footer">
         <strong>
-          R$ {{ product.price }}
+          R$ {{ Number(product.unitPrice).toFixed(2).replace('.', ',') }}
         </strong>
 
         <button type="button">

@@ -1,5 +1,62 @@
 <script setup>
+import { computed, onMounted, ref } from 'vue'
 import ProductCard from '../components/cards/ProductCard.vue'
+
+const API_URL = 'http://localhost:3000'
+
+const products = ref([])
+const search = ref('')
+const selectedCategory = ref('Todos')
+const loading = ref(true)
+const error = ref(null)
+
+const categories = [
+       'Todos',
+       'Curativos',
+       'Estomias',
+       'Cuidados com a pele',
+]
+
+const fetchProducts = async () => {
+       try {
+              loading.value = true
+              error.value = null
+
+              const response = await fetch(`${API_URL}/products`)
+
+              if (!response.ok) {
+                     throw new Error('Erro ao buscar produtos')
+              }
+
+              const result = await response.json()
+
+              products.value = result.data
+       } catch (err) {
+              console.error('Erro ao carregar produtos:', err)
+              error.value = 'Não foi possível carregar os produtos.'
+       } finally {
+              loading.value = false
+       }
+}
+
+const filteredProducts = computed(() => {
+       return products.value.filter((product) => {
+              const matchesSearch =
+                     product.name
+                            .toLowerCase()
+                            .includes(search.value.toLowerCase())
+
+              const matchesCategory =
+                     selectedCategory.value === 'Todos' ||
+                     product.category?.name === selectedCategory.value
+
+              return matchesSearch && matchesCategory
+       })
+})
+
+onMounted(() => {
+       fetchProducts()
+})
 </script>
 
 <template>
@@ -13,19 +70,37 @@ import ProductCard from '../components/cards/ProductCard.vue'
 
                             <div class="search-box">
                                    <span>⌕</span>
-                                   <input type="text" placeholder="Buscar produto..." />
+                                   <input v-model="search" type="text" placeholder="Buscar produto..." />
                             </div>
                      </div>
 
                      <div class="categories">
-                            <button class="active">Todos</button>
-                            <button>Curativos</button>
-                            <button>Estomias</button>
-                            <button>Cuidados</button>
+                            <button v-for="category in categories" :key="category"
+                                   :class="{ active: selectedCategory === category }"
+                                   @click="selectedCategory = category">
+                                   {{ category }}
+                            </button>
                      </div>
 
                      <div class="products-grid">
-                            <ProductCard v-for="product in products" :key="product.id" :product="product" />
+
+                            <p v-if="loading">
+                                   Carregando produtos...
+                            </p>
+
+                            <p v-else-if="error">
+                                   {{ error }}
+                            </p>
+
+                            <template v-else>
+                                   <ProductCard v-for="product in filteredProducts" :key="product.id"
+                                          :product="product" />
+
+                                   <p v-if="filteredProducts.length === 0">
+                                          Nenhum produto encontrado.
+                                   </p>
+                            </template>
+
                      </div>
               </section>
        </main>
