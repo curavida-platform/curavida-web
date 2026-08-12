@@ -8,12 +8,12 @@ import Footer from './components/layout/Footer.vue'
 const route = useRoute()
 
 const showFooter = computed(() => {
-  return route.name !== 'produtos' && route.name !== 'product-details'
+       return route.name === 'home'
 })
 </script>
 
 <template>
-  <Navbar />
+       <Navbar />
 
   <main>
     <router-view />

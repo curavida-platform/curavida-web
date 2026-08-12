@@ -1,3 +1,9 @@
+<script setup>
+import { useCartStore } from '../../stores/cart.js'
+
+const cartStore = useCartStore()
+</script>
+
 <template>
        <header class="navbar">
               <div class="navbar__container">
@@ -28,9 +34,13 @@
                                    </span>
                             </button>
 
-                            <RouterLink to="/carrinho" class="navbar__action" aria-label="Carrinho">
+                            <RouterLink to="/carrinho" class="navbar__action navbar__cart" aria-label="Carrinho">
                                    <span class="material-symbols-outlined">
                                           shopping_bag
+                                   </span>
+
+                                   <span v-if="cartStore.totalItems > 0" class="navbar__cart-count">
+                                          {{ cartStore.totalItems }}
                                    </span>
                             </RouterLink>
 
@@ -189,6 +199,34 @@
 .navbar__account:hover {
        background: var(--color-surface);
        border-color: var(--color-primary);
+}
+
+.navbar__cart {
+       position: relative;
+}
+
+.navbar__cart-count {
+       position: absolute;
+       top: 2px;
+       right: 2px;
+
+       min-width: 17px;
+       height: 17px;
+
+       display: flex;
+       align-items: center;
+       justify-content: center;
+
+       padding: 0 4px;
+
+       border-radius: 50%;
+
+       background: #d98991;
+       color: white;
+
+       font-size: 10px;
+       font-weight: 700;
+       line-height: 1;
 }
 
 /* RESPONSIVO */

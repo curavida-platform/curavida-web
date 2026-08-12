@@ -1,8 +1,10 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { useCartStore } from '../stores/cart.js'
 
 const route = useRoute()
+const cartStore = useCartStore()
 
 const product = ref(null)
 const loading = ref(true)
@@ -33,6 +35,12 @@ const loadProduct = async () => {
   }
 }
 
+const addToCart = () => {
+  if (!product.value) return
+
+  cartStore.addToCart(product.value)
+}
+
 onMounted(() => {
   loadProduct()
 })
@@ -49,11 +57,7 @@ onMounted(() => {
     <section v-else-if="product" class="product-content">
 
       <div class="product-image">
-        <img
-          v-if="product.images?.length"
-          :src="product.images[0].url"
-          :alt="product.images[0].alt || product.name"
-        />
+        <img v-if="product.images?.length" :src="product.images[0].url" :alt="product.images[0].alt || product.name" />
 
         <span v-else>
           Produto
@@ -100,8 +104,8 @@ onMounted(() => {
           R$ {{ product.unitPrice }}
         </strong>
 
-        <button class="contact-button">
-          Solicitar produto
+        <button class="contact-button" type="button" @click="addToCart">
+          Adicionar ao carrinho
         </button>
 
       </div>
