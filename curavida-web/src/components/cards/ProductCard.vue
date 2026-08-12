@@ -1,20 +1,24 @@
 <script setup>
+import { useRouter } from 'vue-router'
+
 defineProps({
   product: {
     type: Object,
     required: true,
   },
 })
+
+const router = useRouter()
+
+const viewProduct = (slug) => {
+  router.push(`/produtos/${slug}`)
+}
 </script>
 
 <template>
   <article class="product-card">
     <div class="product-image">
-      <img
-        v-if="product.images?.length"
-        :src="product.images[0].url"
-        :alt="product.images[0].alt || product.name"
-      />
+      <img v-if="product.images?.length" :src="product.images[0].url" :alt="product.images[0].alt || product.name" />
 
       <span v-else>Produto</span>
     </div>
@@ -37,7 +41,7 @@ defineProps({
           R$ {{ Number(product.unitPrice).toFixed(2).replace('.', ',') }}
         </strong>
 
-        <button type="button">
+        <button type="button" @click="viewProduct(product.slug)">
           Ver produto →
         </button>
       </div>

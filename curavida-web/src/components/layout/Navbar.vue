@@ -15,22 +15,12 @@
                                    Produtos
                             </RouterLink>
 
-                            <RouterLink to="/categorias" class="navbar__link">
-                                   Categorias
-                            </RouterLink>
-
                             <RouterLink to="/sobre" class="navbar__link">
                                    Sobre nós
                             </RouterLink>
                      </nav>
 
                      <div class="navbar__actions">
-
-                            <button type="button" class="navbar__action" aria-label="Pesquisar">
-                                   <span class="material-symbols-outlined">
-                                          search
-                                   </span>
-                            </button>
 
                             <button type="button" class="navbar__action" aria-label="Favoritos">
                                    <span class="material-symbols-outlined">
