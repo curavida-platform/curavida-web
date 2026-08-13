@@ -76,7 +76,9 @@ import logo from '../../assets/images/logo-transparent.png'
        padding: 4rem 0;
 }
 
-/* CONTEÚDO */
+/* =========================================
+   CONTEÚDO
+   ========================================= */
 
 .hero__content {
        position: relative;
@@ -159,6 +161,7 @@ import logo from '../../assets/images/logo-transparent.png'
 .hero__button--primary {
        background: var(--color-primary);
        color: var(--color-white);
+
        box-shadow: var(--shadow-sm);
 }
 
@@ -169,6 +172,7 @@ import logo from '../../assets/images/logo-transparent.png'
 
 .hero__button--secondary {
        border: 1px solid var(--color-border);
+
        background: var(--color-white);
        color: var(--color-primary);
 }
@@ -177,7 +181,10 @@ import logo from '../../assets/images/logo-transparent.png'
        border-color: var(--color-primary);
 }
 
-/* VISUAL */
+
+/* =========================================
+   VISUAL
+   ========================================= */
 
 .hero__visual {
        position: relative;
@@ -190,7 +197,7 @@ import logo from '../../assets/images/logo-transparent.png'
 }
 
 
-/* CÍRCULO DE FUNDO */
+/* CÍRCULO */
 
 .hero__circle {
        position: absolute;
@@ -224,8 +231,9 @@ import logo from '../../assets/images/logo-transparent.png'
 }
 
 .hero__logo img {
+       display: block;
+
        width: 100%;
-       margin-top: 129px;
        height: auto;
 
        object-fit: contain;
@@ -236,7 +244,9 @@ import logo from '../../assets/images/logo-transparent.png'
 }
 
 
-/* DECORAÇÕES */
+/* =========================================
+   DECORAÇÕES
+   ========================================= */
 
 .hero__decoration {
        position: absolute;
@@ -267,7 +277,9 @@ import logo from '../../assets/images/logo-transparent.png'
 }
 
 
-/* ANIMAÇÃO */
+/* =========================================
+   ANIMAÇÃO
+   ========================================= */
 
 @keyframes heroLogoFloat {
 
@@ -281,7 +293,42 @@ import logo from '../../assets/images/logo-transparent.png'
        }
 }
 
-/* RESPONSIVO */
+
+/* =========================================
+   TABLET
+   ========================================= */
+
+@media (max-width: 1024px) {
+       .hero__container {
+              gap: 2rem;
+       }
+
+       .hero__title {
+              font-size: clamp(2.8rem, 5vw, 4rem);
+       }
+
+       .hero__visual {
+              min-height: 440px;
+       }
+
+       .hero__circle {
+              width: 360px;
+              height: 360px;
+       }
+
+       .hero__logo {
+              width: 360px;
+       }
+
+       .hero__logo img {
+              transform: scale(2);
+       }
+}
+
+
+/* =========================================
+   TABLET PEQUENO / MOBILE
+   ========================================= */
 
 @media (max-width: 900px) {
        .hero {
@@ -291,15 +338,34 @@ import logo from '../../assets/images/logo-transparent.png'
        .hero__container {
               grid-template-columns: 1fr;
 
-              padding: 4rem 0;
+              gap: 1rem;
+
+              padding: 4rem 0 3rem;
        }
 
        .hero__content {
               text-align: center;
        }
 
+       .hero__eyebrow {
+              margin-bottom: 1rem;
+
+              font-size: 0.7rem;
+       }
+
+       .hero__title {
+              max-width: 700px;
+
+              margin-inline: auto;
+
+              font-size: clamp(2.8rem, 8vw, 4rem);
+       }
+
        .hero__description {
               margin-inline: auto;
+
+              font-size: 1rem;
+              line-height: 1.7;
        }
 
        .hero__actions {
@@ -320,21 +386,71 @@ import logo from '../../assets/images/logo-transparent.png'
        }
 
        .hero__logo img {
-              width: 100%;
-              margin-top: 90px;
-              height: auto;
+              transform: scale(2);
+       }
 
-              object-fit: contain;
+       .hero__decoration--top {
+              top: 50px;
+              right: 12%;
+       }
 
-              transform: scale(2.4);
-
-              filter: drop-shadow(0 18px 30px rgb(21 92 92 / 10%));
+       .hero__decoration--bottom {
+              bottom: 50px;
+              left: 12%;
        }
 }
 
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
 @media (max-width: 600px) {
+       .hero__container {
+              width: calc(100% - 2rem);
+
+              padding: 3rem 0 2rem;
+       }
+
+       .hero__eyebrow {
+              font-size: 0.62rem;
+              letter-spacing: 0.1em;
+       }
+
+       .hero__title {
+              font-size: clamp(2.4rem, 12vw, 3.2rem);
+
+              line-height: 1.08;
+       }
+
+       .hero__description {
+              max-width: 430px;
+
+              margin-top: 1.25rem;
+
+              font-size: 0.95rem;
+              line-height: 1.65;
+       }
+
+       .hero__actions {
+              flex-direction: column;
+
+              width: 100%;
+
+              gap: 0.75rem;
+
+              margin-top: 1.5rem;
+       }
+
+       .hero__button {
+              width: 100%;
+              max-width: 320px;
+       }
+
        .hero__visual {
               min-height: 300px;
+
+              margin-top: 0.5rem;
        }
 
        .hero__circle {
@@ -346,14 +462,64 @@ import logo from '../../assets/images/logo-transparent.png'
               width: 250px;
        }
 
+       .hero__logo img {
+              transform: scale(1.7);
+              margin-top: 75px;
+       }
+
        .hero__decoration--top {
+              width: 14px;
+              height: 14px;
+
               top: 35px;
-              right: 30px;
+              right: 8%;
        }
 
        .hero__decoration--bottom {
-              bottom: 45px;
-              left: 25px;
+              width: 10px;
+              height: 10px;
+
+              bottom: 40px;
+              left: 8%;
+       }
+}
+
+
+/* =========================================
+   MOBILE PEQUENO
+   ========================================= */
+
+@media (max-width: 400px) {
+       .hero__container {
+              width: calc(100% - 1.5rem);
+
+              padding-top: 2.5rem;
+       }
+
+       .hero__title {
+              font-size: 2.25rem;
+       }
+
+       .hero__description {
+              font-size: 0.9rem;
+       }
+
+       .hero__visual {
+              min-height: 270px;
+       }
+
+       .hero__circle {
+              width: 235px;
+              height: 235px;
+       }
+
+       .hero__logo {
+              width: 220px;
+       }
+
+       .hero__logo img {
+              transform: scale(1.6);
+              margin-top: 50px;
        }
 }
 </style>

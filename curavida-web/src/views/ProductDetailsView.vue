@@ -117,103 +117,305 @@ onMounted(() => {
 <style scoped>
 .product-details {
   min-height: 80vh;
-  padding: 80px 8%;
-  background: #fff;
+
+  background: var(--color-white);
+
+  padding: 80px 0;
 }
 
 .product-content {
-  max-width: 1200px;
+  width: min(1200px, calc(100% - 3rem));
+
   margin: 0 auto;
+
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
   gap: 70px;
+
   align-items: center;
 }
 
+
+/* =========================================
+   IMAGEM
+   ========================================= */
+
 .product-image {
+  width: 100%;
   height: 500px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f7f6;
-  border-radius: 24px;
+
+  background: var(--color-surface);
+
+  border-radius: var(--radius-lg);
+
   overflow: hidden;
 }
 
 .product-image img {
   width: 100%;
   height: 100%;
+
   object-fit: contain;
 }
 
 .product-image span {
-  color: #9aa8a7;
+  color: var(--color-text-light);
+
+  font-size: 14px;
+}
+
+
+/* =========================================
+   INFORMAÇÕES
+   ========================================= */
+
+.product-info {
+  min-width: 0;
 }
 
 .product-category {
-  color: #d98991;
+  display: inline-block;
+
+  margin-bottom: 10px;
+
+  color: var(--color-secondary);
+
   font-size: 13px;
   font-weight: 700;
+
   letter-spacing: 1px;
+
   text-transform: uppercase;
 }
 
 .product-info h1 {
-  margin: 12px 0 20px;
-  color: #263737;
-  font-family: Georgia, serif;
-  font-size: 42px;
+  margin: 0 0 20px;
+
+  color: var(--color-text);
+
+  font-family: var(--font-display);
+
+  font-size: clamp(2.3rem, 4vw, 3.2rem);
+  font-weight: 600;
+
+  line-height: 1.1;
 }
 
 .description {
-  color: #748080;
-  line-height: 1.7;
+  max-width: 550px;
+
+  margin: 0;
+
+  color: var(--color-text-light);
+
   font-size: 16px;
+
+  line-height: 1.7;
 }
+
+
+/* =========================================
+   DADOS DO PRODUTO
+   ========================================= */
 
 .product-data {
   margin: 30px 0;
-  color: #526161;
+
+  color: var(--color-text);
+
   line-height: 1.8;
 }
 
 .product-data p {
   margin: 5px 0;
+
+  color: var(--color-text-light);
 }
+
+.product-data strong {
+  color: var(--color-text);
+}
+
+
+/* =========================================
+   PREÇO
+   ========================================= */
 
 .price {
   display: block;
+
   margin-bottom: 25px;
-  color: #176b6d;
+
+  color: var(--color-primary);
+
   font-size: 25px;
 }
 
+
+/* =========================================
+   BOTÃO
+   ========================================= */
+
 .contact-button {
-  padding: 14px 25px;
+  min-height: 50px;
+
+  padding: 0 25px;
+
   border: none;
-  border-radius: 30px;
-  background: #176b6d;
-  color: white;
+
+  border-radius: var(--radius-full);
+
+  background: var(--color-primary);
+
+  color: var(--color-white);
+
+  font-family: var(--font-primary);
+
+  font-size: 14px;
   font-weight: 700;
+
   cursor: pointer;
+
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .contact-button:hover {
-  background: #12595b;
+  background: var(--color-primary-dark);
+
+  transform: translateY(-2px);
+
+  box-shadow: var(--shadow-md);
 }
+
+
+/* =========================================
+   TABLET
+   ========================================= */
+
+@media (max-width: 1024px) {
+  .product-details {
+    padding: 64px 0;
+  }
+
+  .product-content {
+    gap: 45px;
+  }
+
+  .product-image {
+    height: 420px;
+  }
+}
+
+
+/* =========================================
+   TABLET PEQUENO
+   ========================================= */
 
 @media (max-width: 800px) {
   .product-content {
     grid-template-columns: 1fr;
+
     gap: 35px;
   }
 
   .product-image {
-    height: 350px;
+    height: 400px;
+
+    max-width: 600px;
+
+    margin: 0 auto;
+  }
+
+  .product-info {
+    max-width: 650px;
+
+    margin: 0 auto;
   }
 
   .product-info h1 {
-    font-size: 34px;
+    font-size: 2.4rem;
+  }
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 600px) {
+  .product-details {
+    padding: 40px 0 60px;
+  }
+
+  .product-content {
+    width: calc(100% - 2rem);
+
+    gap: 28px;
+  }
+
+  .product-image {
+    height: 320px;
+
+    border-radius: var(--radius-md);
+  }
+
+  .product-info h1 {
+    font-size: 2rem;
+
+    line-height: 1.15;
+  }
+
+  .description {
+    font-size: 15px;
+
+    line-height: 1.65;
+  }
+
+  .product-data {
+    margin: 25px 0;
+
+    font-size: 14px;
+  }
+
+  .price {
+    margin-bottom: 20px;
+
+    font-size: 23px;
+  }
+
+  .contact-button {
+    width: 100%;
+  }
+}
+
+
+/* =========================================
+   MOBILE PEQUENO
+   ========================================= */
+
+@media (max-width: 400px) {
+  .product-content {
+    width: calc(100% - 1.5rem);
+  }
+
+  .product-image {
+    height: 280px;
+  }
+
+  .product-info h1 {
+    font-size: 1.8rem;
+  }
+
+  .product-data {
+    font-size: 13px;
   }
 }
 </style>

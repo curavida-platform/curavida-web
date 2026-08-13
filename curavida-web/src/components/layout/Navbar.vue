@@ -1,5 +1,6 @@
 <script setup>
 import { useCartStore } from '../../stores/cart.js'
+import MobileMenu from './MobileMenu.vue'
 
 const cartStore = useCartStore()
 </script>
@@ -43,6 +44,8 @@ const cartStore = useCartStore()
                                           {{ cartStore.totalItems }}
                                    </span>
                             </RouterLink>
+
+                            <MobileMenu />
 
                             <RouterLink to="/login" class="navbar__account">
                                    <span class="material-symbols-outlined">
@@ -238,20 +241,20 @@ const cartStore = useCartStore()
 }
 
 @media (max-width: 600px) {
-       .navbar {
-              height: 68px;
-       }
+  .navbar {
+    height: 68px;
+  }
 
-       .navbar__container {
-              width: min(100% - 1.5rem, 1200px);
-       }
+  .navbar__container {
+    width: calc(100% - 1.5rem);
+  }
 
-       .navbar__logo {
-              font-size: 1.55rem;
-       }
+  .navbar__logo {
+    font-size: 1.55rem;
+  }
 
-       .navbar__account span:last-child {
-              display: none;
-       }
+  .navbar__account span:last-child {
+    display: none;
+  }
 }
 </style>

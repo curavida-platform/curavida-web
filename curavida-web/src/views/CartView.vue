@@ -84,20 +84,20 @@ const submitOrder = async () => {
     <section class="cart-content">
 
       <div v-if="success" class="success-message">
-          <span class="material-symbols-outlined">
-            check_circle
-          </span>
+        <span class="material-symbols-outlined">
+          check_circle
+        </span>
 
-          <h2>Solicitação enviada!</h2>
+        <h2>Solicitação enviada!</h2>
 
-          <p>
-            Recebemos seu pedido. Nossa equipe entrará em contato com você em breve.
-          </p>
+        <p>
+          Recebemos seu pedido. Nossa equipe entrará em contato com você em breve.
+        </p>
 
-          <RouterLink to="/produtos" class="back-button">
-            Continuar vendo produtos
-          </RouterLink>
-        </div>
+        <RouterLink to="/produtos" class="back-button">
+          Continuar vendo produtos
+        </RouterLink>
+      </div>
 
       <div class="cart-header">
         <span class="section-label">SEU PEDIDO</span>
@@ -241,145 +241,318 @@ const submitOrder = async () => {
 </template>
 
 <style scoped>
+/* =========================================
+   PÁGINA
+   ========================================= */
+
 .cart-page {
   min-height: 100vh;
-  background: #fff;
+  background: var(--color-white);
 }
 
 .cart-content {
-  width: min(1100px, 90%);
+  width: min(1100px, calc(100% - 3rem));
+
   margin: 0 auto;
   padding: 80px 0;
 }
 
+
+/* =========================================
+   CABEÇALHO
+   ========================================= */
+
 .section-label {
-  color: #176b6d;
+  color: var(--color-primary);
+
   font-size: 12px;
   font-weight: 700;
+
   letter-spacing: 1.5px;
 }
 
 .cart-header h1 {
-  margin-top: 10px;
-  color: #263737;
-  font-family: Georgia, serif;
-  font-size: 42px;
+  margin: 10px 0 0;
+
+  color: var(--color-text);
+
+  font-family: var(--font-display);
+
+  font-size: clamp(2.2rem, 5vw, 2.8rem);
+  font-weight: 600;
 }
+
+
+/* =========================================
+   CARRINHO VAZIO
+   ========================================= */
 
 .cart-empty {
   margin-top: 60px;
+
   padding: 80px 20px;
+
   text-align: center;
-  border: 1px solid #e7eceb;
-  border-radius: 24px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  background: var(--color-white);
 }
 
 .cart-empty .material-symbols-outlined {
   font-size: 48px;
-  color: #176b6d;
+
+  color: var(--color-primary);
 }
 
 .cart-empty h2 {
   margin: 20px 0 10px;
-  color: #263737;
+
+  color: var(--color-text);
+
+  font-family: var(--font-display);
 }
 
 .cart-empty p {
-  color: #748080;
   margin-bottom: 25px;
+
+  color: var(--color-text-light);
 }
+
+
+/* =========================================
+   BOTÕES
+   ========================================= */
 
 .back-button,
 .request-button {
+  min-height: 48px;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 13px 24px;
+
+  padding: 0 24px;
+
   border: none;
-  border-radius: 30px;
-  background: #176b6d;
-  color: white;
+  border-radius: var(--radius-full);
+
+  background: var(--color-primary);
+
+  color: var(--color-white);
+
+  font-family: var(--font-primary);
+  font-size: 14px;
   font-weight: 700;
+
   cursor: pointer;
+
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
+
+.back-button:hover,
+.request-button:hover {
+  background: var(--color-primary-dark);
+
+  transform: translateY(-2px);
+
+  box-shadow: var(--shadow-md);
+}
+
+
+/* =========================================
+   LISTA
+   ========================================= */
 
 .cart-list {
   margin-top: 50px;
 }
 
+
+/* =========================================
+   ITEM
+   ========================================= */
+
 .cart-item {
   display: grid;
-  grid-template-columns: 110px 1fr auto auto;
+
+  grid-template-columns:
+    110px minmax(0, 1fr) auto auto;
+
   align-items: center;
+
   gap: 25px;
+
   padding: 20px 0;
-  border-bottom: 1px solid #e7eceb;
+
+  border-bottom: 1px solid var(--color-border);
 }
 
 .cart-item-image {
   width: 110px;
   height: 110px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f7f6;
-  border-radius: 15px;
+
+  background: var(--color-surface);
+
+  border-radius: var(--radius-md);
+
   overflow: hidden;
 }
 
 .cart-item-image img {
   width: 100%;
   height: 100%;
+
   object-fit: contain;
 }
 
+.cart-item-image span {
+  color: var(--color-text-light);
+
+  font-size: 12px;
+}
+
+
+/* =========================================
+   INFORMAÇÕES
+   ========================================= */
+
+.cart-item-info {
+  min-width: 0;
+}
+
 .product-reference {
-  color: #d98991;
+  color: var(--color-secondary);
+
   font-size: 12px;
   font-weight: 700;
+
+  letter-spacing: 0.8px;
 }
 
 .cart-item-info h2 {
   margin: 6px 0;
-  color: #263737;
+
+  overflow-wrap: break-word;
+
+  color: var(--color-text);
+
   font-size: 19px;
+  font-weight: 600;
 }
 
 .cart-item-info p {
   margin: 0;
-  color: #748080;
+
+  color: var(--color-text-light);
+
+  font-size: 14px;
 }
+
+
+/* =========================================
+   QUANTIDADE
+   ========================================= */
 
 .quantity-control {
   display: flex;
   align-items: center;
+
   gap: 15px;
-  padding: 8px 12px;
-  border: 1px solid #dfe5e4;
-  border-radius: 30px;
+
+  padding: 7px 10px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+
+  background: var(--color-white);
+}
+
+.quantity-control span {
+  min-width: 20px;
+
+  text-align: center;
+
+  color: var(--color-text);
+
+  font-weight: 600;
 }
 
 .quantity-control button {
   width: 28px;
   height: 28px;
+
+  display: grid;
+  place-items: center;
+
   border: none;
   border-radius: 50%;
-  background: #f5f7f6;
+
+  background: var(--color-surface);
+
+  color: var(--color-text);
+
   cursor: pointer;
+
   font-size: 18px;
+
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
 }
 
+.quantity-control button:hover {
+  background: var(--color-primary);
+
+  color: var(--color-white);
+}
+
+
+/* =========================================
+   REMOVER
+   ========================================= */
+
 .remove-button {
+  padding: 8px;
+
   border: none;
+
   background: transparent;
-  color: #c46f78;
+
+  color: var(--color-secondary);
+
+  font-family: var(--font-primary);
+  font-size: 14px;
+  font-weight: 600;
+
   cursor: pointer;
 }
+
+.remove-button:hover {
+  text-decoration: underline;
+}
+
+
+/* =========================================
+   RODAPÉ DO CARRINHO
+   ========================================= */
 
 .cart-footer {
   display: flex;
+
   align-items: center;
   justify-content: space-between;
+
+  gap: 30px;
+
   margin-top: 40px;
   padding-top: 30px;
 }
@@ -387,49 +560,38 @@ const submitOrder = async () => {
 .cart-footer div {
   display: flex;
   flex-direction: column;
+
   gap: 5px;
 }
 
 .cart-footer span {
-  color: #748080;
+  color: var(--color-text-light);
+
+  font-size: 14px;
 }
 
 .cart-footer strong {
-  color: #263737;
+  color: var(--color-text);
+
   font-size: 22px;
 }
 
-@media (max-width: 700px) {
-  .cart-item {
-    grid-template-columns: 80px 1fr;
-  }
 
-  .cart-item-image {
-    width: 80px;
-    height: 80px;
-  }
+/* =========================================
+   FORMULÁRIO
+   ========================================= */
 
-  .quantity-control,
-  .remove-button {
-    grid-column: 2;
-    justify-self: start;
-  }
-
-  .cart-footer {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 25px;
-  }
-}
-
-/* --- FORMULÁRIO --- */
 .request-form {
+  width: 100%;
   max-width: 650px;
+
   margin: 50px auto 0;
   padding: 35px;
-  border: 1px solid #e7eceb;
-  border-radius: 24px;
-  background: #fafcfc;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  background: var(--color-background);
 }
 
 .request-form-header {
@@ -438,25 +600,38 @@ const submitOrder = async () => {
 
 .request-form-header h2 {
   margin: 10px 0;
-  color: #263737;
-  font-family: Georgia, serif;
+
+  color: var(--color-text);
+
+  font-family: var(--font-display);
+
   font-size: 28px;
+  font-weight: 600;
 }
 
 .request-form-header p {
-  color: #748080;
+  color: var(--color-text-light);
+
   line-height: 1.6;
 }
+
+
+/* =========================================
+   CAMPOS
+   ========================================= */
 
 .form-group {
   display: flex;
   flex-direction: column;
+
   gap: 8px;
+
   margin-bottom: 20px;
 }
 
 .form-group label {
-  color: #263737;
+  color: var(--color-text);
+
   font-size: 14px;
   font-weight: 600;
 }
@@ -464,76 +639,349 @@ const submitOrder = async () => {
 .form-group input,
 .form-group textarea {
   width: 100%;
+
+  box-sizing: border-box;
+
   padding: 13px 15px;
-  border: 1px solid #dfe5e4;
-  border-radius: 12px;
-  background: white;
-  color: #263737;
-  font: inherit;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: var(--color-white);
+
+  color: var(--color-text);
+
+  font-family: var(--font-primary);
+  font-size: 14px;
+
   outline: none;
-  transition: border-color 0.2s ease;
+
+  transition: border-color var(--transition-fast);
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
-  border-color: #176b6d;
+  border-color: var(--color-primary);
 }
 
 .form-group textarea {
+  min-height: 110px;
+
   resize: vertical;
 }
 
+
+/* =========================================
+   ERRO
+   ========================================= */
+
 .form-error {
   margin-bottom: 20px;
+
   color: #c46f78;
+
   font-size: 14px;
 }
 
+
+/* =========================================
+   AÇÕES DO FORMULÁRIO
+   ========================================= */
+
 .form-actions {
   display: flex;
+
   justify-content: flex-end;
+
   gap: 12px;
+
   margin-top: 25px;
 }
 
 .cancel-button {
-  padding: 13px 24px;
-  border: 1px solid #dfe5e4;
-  border-radius: 30px;
-  background: white;
-  color: #526161;
+  min-height: 48px;
+
+  padding: 0 24px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+
+  background: var(--color-white);
+
+  color: var(--color-text-light);
+
+  font-family: var(--font-primary);
   font-weight: 700;
+
   cursor: pointer;
+
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.cancel-button:hover {
+  border-color: var(--color-primary);
+
+  color: var(--color-primary);
 }
 
 .request-button:disabled {
   opacity: 0.6;
+
   cursor: not-allowed;
+
+  transform: none;
+
+  box-shadow: none;
 }
 
+
+/* =========================================
+   SUCESSO
+   ========================================= */
+
 .success-message {
+  width: 100%;
   max-width: 600px;
-  margin: 50px auto 0;
+
+  margin: 50px auto;
+
   padding: 50px 30px;
+
+  box-sizing: border-box;
+
   text-align: center;
-  border: 1px solid #dfe5e4;
-  border-radius: 24px;
-  background: #f8fbfa;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  background: var(--color-surface);
 }
 
 .success-message .material-symbols-outlined {
   font-size: 52px;
-  color: #176b6d;
+
+  color: var(--color-primary);
 }
 
 .success-message h2 {
   margin: 15px 0 10px;
-  color: #263737;
+
+  color: var(--color-text);
+
+  font-family: var(--font-display);
 }
 
 .success-message p {
   margin-bottom: 25px;
-  color: #748080;
+
+  color: var(--color-text-light);
+
   line-height: 1.6;
+}
+
+
+/* =========================================
+   TABLET
+   ========================================= */
+
+@media (max-width: 900px) {
+  .cart-content {
+    width: min(100% - 2.5rem, 700px);
+
+    padding: 60px 0;
+  }
+
+  .cart-item {
+    grid-template-columns: 90px minmax(0, 1fr) auto;
+
+    gap: 18px;
+  }
+
+  .cart-item-image {
+    width: 90px;
+    height: 90px;
+  }
+
+  .remove-button {
+    grid-column: 3;
+
+    justify-self: end;
+  }
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 600px) {
+  .cart-content {
+    width: calc(100% - 2rem);
+
+    padding: 40px 0 60px;
+  }
+
+  .cart-header h1 {
+    font-size: 2.2rem;
+  }
+
+  .cart-list {
+    margin-top: 35px;
+  }
+
+  /*
+   * No celular o item vira um pequeno bloco.
+   */
+
+  .cart-item {
+    grid-template-columns: 76px minmax(0, 1fr);
+
+    gap: 15px;
+
+    padding: 20px 0;
+  }
+
+  .cart-item-image {
+    width: 76px;
+    height: 76px;
+
+    grid-row: 1 / span 2;
+  }
+
+  .cart-item-info h2 {
+    font-size: 16px;
+
+    line-height: 1.35;
+  }
+
+  .cart-item-info p {
+    font-size: 13px;
+  }
+
+  .quantity-control {
+    grid-column: 2;
+
+    justify-self: start;
+
+    gap: 12px;
+  }
+
+  .remove-button {
+    grid-column: 2;
+
+    justify-self: start;
+
+    padding: 0;
+
+    margin-top: -5px;
+  }
+
+
+  /* RODAPÉ */
+
+  .cart-footer {
+    align-items: stretch;
+
+    flex-direction: column;
+
+    gap: 20px;
+
+    margin-top: 30px;
+  }
+
+  .cart-footer div {
+    padding-bottom: 5px;
+  }
+
+  .cart-footer .request-button {
+    width: 100%;
+  }
+
+
+  /* FORMULÁRIO */
+
+  .request-form {
+    margin-top: 35px;
+
+    padding: 24px 20px;
+
+    border-radius: var(--radius-md);
+  }
+
+  .request-form-header h2 {
+    font-size: 24px;
+  }
+
+  .request-form-header p {
+    font-size: 14px;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+
+    gap: 10px;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+
+
+  /* SUCESSO */
+
+  .success-message {
+    margin: 30px auto;
+
+    padding: 40px 20px;
+  }
+
+  .success-message h2 {
+    font-size: 24px;
+  }
+
+  .success-message p {
+    font-size: 14px;
+  }
+
+  .back-button {
+    width: 100%;
+  }
+}
+
+
+/* =========================================
+   MOBILE PEQUENO
+   ========================================= */
+
+@media (max-width: 400px) {
+  .cart-content {
+    width: calc(100% - 1.5rem);
+  }
+
+  .cart-item {
+    grid-template-columns: 65px minmax(0, 1fr);
+
+    gap: 12px;
+  }
+
+  .cart-item-image {
+    width: 65px;
+    height: 65px;
+  }
+
+  .cart-item-info h2 {
+    font-size: 15px;
+  }
+
+  .quantity-control {
+    padding: 6px 8px;
+  }
+
+  .quantity-control button {
+    width: 26px;
+    height: 26px;
+  }
 }
 </style>

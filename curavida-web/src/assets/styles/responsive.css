@@ -1,0 +1,53 @@
+/* =========================================
+   RESPONSIVIDADE GLOBAL
+   CuraVida Web
+   ========================================= */
+
+
+/* =========================================
+   TABLET
+   ========================================= */
+
+@media (max-width: 1024px) {
+       :root {
+              --space-3xl: 4rem;
+              --space-2xl: 2.5rem;
+       }
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 768px) {
+       :root {
+              --space-3xl: 3rem;
+              --space-2xl: 2rem;
+              --space-xl: 1.5rem;
+              --space-lg: 1.25rem;
+       }
+
+       body {
+              overflow-x: hidden;
+       }
+
+       #app {
+              width: 100%;
+              overflow-x: hidden;
+       }
+}
+
+
+/* =========================================
+   MOBILE PEQUENO
+   ========================================= */
+
+@media (max-width: 480px) {
+       :root {
+              --space-3xl: 2.5rem;
+              --space-2xl: 1.75rem;
+              --space-xl: 1.25rem;
+              --space-lg: 1rem;
+       }
+}
