@@ -1,10 +1,15 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth.js'
+import orderService from '../services/order.service.js'
 
 const authStore = useAuthStore()
 const router = useRouter()
+
+const orders = ref([])
+const ordersLoading = ref(false)
+const ordersError = ref('')
 
 onMounted(async () => {
        if (!authStore.token) {
@@ -18,8 +23,32 @@ onMounted(async () => {
 
        if (!authStore.user) {
               router.push('/login')
+              return
        }
+
+       await loadOrders()
 })
+
+const loadOrders = async () => {
+       try {
+              ordersLoading.value = true
+              ordersError.value = ''
+
+              const response = await orderService.getMyOrders(
+                     authStore.token,
+              )
+
+              orders.value = response.data.data
+       } catch (error) {
+              console.error('Erro ao carregar pedidos:', error)
+
+              ordersError.value =
+                     error.response?.data?.message ||
+                     'Não foi possível carregar seus pedidos.'
+       } finally {
+              ordersLoading.value = false
+       }
+}
 
 const handleLogout = () => {
        authStore.logout()
@@ -111,21 +140,95 @@ const handleLogout = () => {
                                    </div>
                             </div>
 
-                            <div class="empty-orders">
+                            <div v-if="ordersLoading" class="orders-loading">
+                                   Carregando seus pedidos...
+                            </div>
+
+                            <div v-else-if="ordersError" class="orders-error">
+                                   {{ ordersError }}
+                            </div>
+
+                            <div v-else-if="orders.length === 0" class="empty-orders">
                                    <span>📋</span>
 
                                    <h3>
-                                          Seus pedidos aparecerão aqui
+                                          Você ainda não possui pedidos
                                    </h3>
 
                                    <p>
-                                          Assim que você realizar um pedido,
-                                          poderá acompanhá-lo nesta área.
+                                          Quando você realizar uma solicitação,
+                                          ela aparecerá aqui.
                                    </p>
 
                                    <RouterLink to="/produtos">
                                           Ver produtos
                                    </RouterLink>
+                            </div>
+
+                            <div v-else class="orders-list">
+
+                                   <article v-for="order in orders" :key="order.id" class="order-card">
+
+                                          <div class="order-header">
+
+                                                 <div>
+                                                        <span class="order-label">
+                                                               PEDIDO
+                                                        </span>
+
+                                                        <strong>
+                                                               #{{ order.id.slice(0, 8).toUpperCase() }}
+                                                        </strong>
+                                                 </div>
+
+                                                 <span class="order-status"
+                                                        :class="`status-${order.status.toLowerCase()}`">
+                                                        {{ order.status }}
+                                                 </span>
+
+                                          </div>
+
+                                          <div class="order-info">
+
+                                                 <div>
+                                                        <span>Data</span>
+
+                                                        <strong>
+                                                               {{ new Date(order.createdAt).toLocaleDateString('pt-BR')
+                                                               }}
+                                                        </strong>
+                                                 </div>
+
+                                                 <div>
+                                                        <span>Itens</span>
+
+                                                        <strong>
+                                                               {{ order.items.length }}
+                                                        </strong>
+                                                 </div>
+
+                                          </div>
+
+                                          <div class="order-products">
+
+                                                 <div v-for="item in order.items" :key="item.id" class="order-product">
+
+                                                        <div>
+                                                               <strong>
+                                                                      {{ item.product.name }}
+                                                               </strong>
+
+                                                               <span>
+                                                                      {{ item.quantity }} unidade(s)
+                                                               </span>
+                                                        </div>
+
+                                                 </div>
+
+                                          </div>
+
+                                   </article>
+
                             </div>
                      </section>
 
@@ -306,6 +409,165 @@ const handleLogout = () => {
        font-weight: 600;
 
        text-decoration: none;
+}
+
+.orders-list {
+       display: flex;
+       flex-direction: column;
+       gap: 15px;
+}
+
+.order-card {
+       padding: 20px;
+
+       border: 1px solid var(--color-border);
+       border-radius: 10px;
+
+       background: var(--color-white);
+}
+
+.order-header {
+       display: flex;
+       align-items: center;
+       justify-content: space-between;
+
+       gap: 15px;
+
+       padding-bottom: 15px;
+
+       border-bottom: 1px solid var(--color-border);
+}
+
+.order-label {
+       display: block;
+
+       margin-bottom: 4px;
+
+       color: var(--color-muted);
+
+       font-size: 10px;
+       font-weight: 700;
+       letter-spacing: 1px;
+}
+
+.order-header strong {
+       color: var(--color-text);
+
+       font-size: 14px;
+}
+
+.order-status {
+       padding: 6px 10px;
+
+       border-radius: 20px;
+
+       font-size: 11px;
+       font-weight: 700;
+}
+
+.status-pending {
+       background: #fff7ed;
+       color: #c2410c;
+}
+
+.status-approved {
+       background: #f0fdf4;
+       color: #15803d;
+}
+
+.status-rejected {
+       background: #fef2f2;
+       color: #b91c1c;
+}
+
+.status-completed {
+       background: #eff6ff;
+       color: #1d4ed8;
+}
+
+.order-info {
+       display: flex;
+       gap: 40px;
+
+       padding: 18px 0;
+}
+
+.order-info div {
+       display: flex;
+       flex-direction: column;
+       gap: 5px;
+}
+
+.order-info span {
+       color: var(--color-muted);
+
+       font-size: 12px;
+}
+
+.order-info strong {
+       color: var(--color-text);
+
+       font-size: 14px;
+}
+
+.order-products {
+       display: flex;
+       flex-direction: column;
+
+       gap: 8px;
+}
+
+.order-product {
+       padding: 12px;
+
+       border-radius: 8px;
+
+       background: var(--color-surface);
+}
+
+.order-product div {
+       display: flex;
+       flex-direction: column;
+       gap: 4px;
+}
+
+.order-product strong {
+       color: var(--color-text);
+
+       font-size: 13px;
+}
+
+.order-product span {
+       color: var(--color-muted);
+
+       font-size: 12px;
+}
+
+.orders-loading,
+.orders-error {
+       padding: 40px;
+
+       text-align: center;
+
+       color: var(--color-muted);
+
+       border: 1px dashed var(--color-border);
+       border-radius: 10px;
+}
+
+.orders-error {
+       color: #b91c1c;
+}
+
+@media (max-width: 500px) {
+       .order-header {
+              align-items: flex-start;
+              flex-direction: column;
+       }
+
+       .order-info {
+              gap: 25px;
+       }
 }
 
 .loading {

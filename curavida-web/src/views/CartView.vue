@@ -1,8 +1,12 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useCartStore } from '../stores/cart.js'
+import { useAuthStore } from '../stores/auth.js'
+import { useRouter } from 'vue-router'
 
 const cart = useCartStore()
+const authStore = useAuthStore()
+const router = useRouter()
 
 const items = computed(() => cart.items)
 
@@ -11,25 +15,34 @@ const loading = ref(false)
 const success = ref(false)
 const error = ref('')
 
-const customerName = ref('')
-const customerEmail = ref('')
-const customerPhone = ref('')
 const notes = ref('')
 
 const openRequestForm = () => {
-  showForm.value = true
-  success.value = false
   error.value = ''
-}
+  success.value = false
 
-const submitOrder = async () => {
-  if (!customerName.value.trim()) {
-    error.value = 'Informe seu nome.'
+  if (!authStore.isAuthenticated) {
+    router.push({
+      name: 'login',
+      query: {
+        redirect: '/carrinho',
+      },
+    })
+
     return
   }
 
-  if (!customerPhone.value.trim()) {
-    error.value = 'Informe seu WhatsApp ou telefone.'
+  showForm.value = true
+}
+
+const submitOrder = async () => {
+  if (!authStore.isAuthenticated || !authStore.token) {
+    error.value = 'Você precisa estar conectado para enviar o pedido.'
+    return
+  }
+
+  if (items.value.length === 0) {
+    error.value = 'Seu carrinho está vazio.'
     return
   }
 
@@ -39,13 +52,13 @@ const submitOrder = async () => {
 
     const response = await fetch('http://localhost:3000/orders', {
       method: 'POST',
+
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${authStore.token}`,
       },
+
       body: JSON.stringify({
-        customerName: customerName.value,
-        customerEmail: customerEmail.value || null,
-        customerPhone: customerPhone.value,
         notes: notes.value || null,
 
         items: items.value.map((item) => ({
@@ -58,21 +71,24 @@ const submitOrder = async () => {
     const result = await response.json()
 
     if (!response.ok || !result.success) {
-      throw new Error(result.message || 'Erro ao enviar solicitação.')
+      throw new Error(
+        result.message || 'Erro ao enviar solicitação.',
+      )
     }
 
+    // Pedido criado com sucesso
     cart.clearCart()
 
     success.value = true
     showForm.value = false
 
-    customerName.value = ''
-    customerEmail.value = ''
-    customerPhone.value = ''
     notes.value = ''
   } catch (err) {
     console.error('Erro ao solicitar orçamento:', err)
-    error.value = err.message || 'Não foi possível enviar sua solicitação.'
+
+    error.value =
+      err.message ||
+      'Não foi possível enviar sua solicitação.'
   } finally {
     loading.value = false
   }
@@ -167,7 +183,9 @@ const submitOrder = async () => {
           </div>
 
           <button class="request-button" type="button" @click="openRequestForm">
-            Solicitar orçamento
+            {{ authStore.isAuthenticated
+              ? 'Solicitar orçamento'
+              : 'Entrar para solicitar' }}
           </button>
         </div>
 
@@ -176,39 +194,30 @@ const submitOrder = async () => {
       <div v-if="showForm" class="request-form">
 
         <div class="request-form-header">
-          <span class="section-label">FINALIZAR SOLICITAÇÃO</span>
+          <span class="section-label">
+            FINALIZAR SOLICITAÇÃO
+          </span>
 
-          <h2>Como podemos falar com você?</h2>
+          <h2>Quase tudo pronto</h2>
 
           <p>
-            Preencha seus dados para que nossa equipe possa analisar sua solicitação.
+            Seu pedido será enviado para nossa equipe.
+            Usaremos os dados cadastrados na sua conta para entrar em contato.
           </p>
         </div>
 
         <form @submit.prevent="submitOrder">
 
-          <div class="form-group">
-            <label for="customerName">
-              Nome *
-            </label>
+          <div class="customer-summary">
+            <strong>{{ authStore.customer?.name }}</strong>
 
-            <input id="customerName" v-model="customerName" type="text" placeholder="Seu nome" />
-          </div>
+            <span>
+              {{ authStore.user?.email }}
+            </span>
 
-          <div class="form-group">
-            <label for="customerPhone">
-              WhatsApp / Telefone *
-            </label>
-
-            <input id="customerPhone" v-model="customerPhone" type="tel" placeholder="(85) 99999-9999" />
-          </div>
-
-          <div class="form-group">
-            <label for="customerEmail">
-              E-mail
-            </label>
-
-            <input id="customerEmail" v-model="customerEmail" type="email" placeholder="seu@email.com" />
+            <span v-if="authStore.customer?.phone">
+              {{ authStore.customer.phone }}
+            </span>
           </div>
 
           <div class="form-group">
@@ -216,7 +225,8 @@ const submitOrder = async () => {
               Observação
             </label>
 
-            <textarea id="notes" v-model="notes" rows="4" placeholder="Alguma informação adicional?"></textarea>
+            <textarea id="notes" v-model="notes" rows="4"
+              placeholder="Alguma informação adicional sobre o pedido?"></textarea>
           </div>
 
           <p v-if="error" class="form-error">
@@ -455,6 +465,30 @@ const submitOrder = async () => {
   color: var(--color-text-light);
 
   font-size: 14px;
+}
+
+.customer-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  margin-bottom: 24px;
+  padding: 16px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: var(--color-surface);
+}
+
+.customer-summary strong {
+  color: var(--color-text);
+  font-size: 15px;
+}
+
+.customer-summary span {
+  color: var(--color-text-light);
+  font-size: 13px;
 }
 
 
