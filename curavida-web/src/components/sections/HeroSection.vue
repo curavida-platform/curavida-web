@@ -235,7 +235,7 @@ import logo from '../../assets/images/logo-transparent.png'
 
        width: 100%;
        height: auto;
-
+       margin-top: 135px;
        object-fit: contain;
 
        transform: scale(2.4);
