@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '../stores/auth.js'
 
 import HomeView from '../views/HomeView.vue'
 import ProductsView from '../views/ProductsView.vue'
@@ -46,18 +47,56 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView,
+      meta: {
+        guestOnly: true,
+      },
     },
+
     {
       path: '/cadastro',
       name: 'cadastro',
       component: RegisterView,
+      meta: {
+        guestOnly: true,
+      },
     },
     {
       path: '/conta',
       name: 'conta',
       component: AccountView,
+      meta: {
+        requiresAuth: true,
+      },
     },
   ],
+})
+
+router.beforeEach(async (to) => {
+  const authStore = useAuthStore()
+
+  if (!authStore.initialized) {
+    await authStore.fetchUser()
+  }
+
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    return {
+      name: 'login',
+      query: {
+        redirect: to.fullPath,
+      },
+    }
+  }
+
+  if (
+    to.meta.guestOnly &&
+    authStore.isAuthenticated
+  ) {
+    return {
+      name: 'conta',
+    }
+  }
+
+  return true
 })
 
 export default router

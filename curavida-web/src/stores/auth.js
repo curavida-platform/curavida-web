@@ -6,10 +6,12 @@ export const useAuthStore = defineStore('auth', {
               user: null,
               token: localStorage.getItem('curavida_token'),
               loading: false,
+              initialized: false,
        }),
 
        getters: {
               isAuthenticated: (state) => !!state.token,
+
               customer: (state) => state.user?.customer || null,
        },
 
@@ -39,7 +41,8 @@ export const useAuthStore = defineStore('auth', {
                      try {
                             const response = await authService.login(data)
 
-                            const { id, email, role, customer } = response.data.data
+                            const { id, email, role, customer, token } =
+                                   response.data.data
 
                             this.user = {
                                    id,
@@ -48,13 +51,13 @@ export const useAuthStore = defineStore('auth', {
                                    customer,
                             }
 
-                            // Quando o login retornar o token,
-                            // ele será salvo aqui.
-                            const token = response.data.data.token
-
                             if (token) {
                                    this.token = token
-                                   localStorage.setItem('curavida_token', token)
+
+                                   localStorage.setItem(
+                                          'curavida_token',
+                                          token,
+                                   )
                             }
 
                             return this.user
@@ -65,6 +68,7 @@ export const useAuthStore = defineStore('auth', {
 
               async fetchUser() {
                      if (!this.token) {
+                            this.initialized = true
                             return null
                      }
 
@@ -75,8 +79,16 @@ export const useAuthStore = defineStore('auth', {
 
                             return this.user
                      } catch (error) {
+                            console.error(
+                                   'Sessão inválida:',
+                                   error,
+                            )
+
                             this.logout()
+
                             return null
+                     } finally {
+                            this.initialized = true
                      }
               },
 
@@ -84,7 +96,9 @@ export const useAuthStore = defineStore('auth', {
                      this.user = null
                      this.token = null
 
-                     localStorage.removeItem('curavida_token')
+                     localStorage.removeItem(
+                            'curavida_token',
+                     )
               },
        },
 })

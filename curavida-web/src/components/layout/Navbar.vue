@@ -1,8 +1,10 @@
 <script setup>
 import { useCartStore } from '../../stores/cart.js'
+import { useAuthStore } from '../../stores/auth.js'
 import MobileMenu from './MobileMenu.vue'
 
 const cartStore = useCartStore()
+const authStore = useAuthStore()
 </script>
 
 <template>
@@ -47,12 +49,17 @@ const cartStore = useCartStore()
 
                             <MobileMenu />
 
-                            <RouterLink to="/login" class="navbar__account">
+                            <RouterLink :to="authStore.isAuthenticated ? '/conta' : '/login'" class="navbar__account">
                                    <span class="material-symbols-outlined">
                                           person
                                    </span>
 
-                                   <span>Entrar</span>
+                                   <span>
+                                          {{ authStore.isAuthenticated
+                                                 ? (authStore.customer?.name || 'Minha conta')
+                                          : 'Entrar'
+                                          }}
+                                   </span>
                             </RouterLink>
 
                      </div>
@@ -241,20 +248,20 @@ const cartStore = useCartStore()
 }
 
 @media (max-width: 600px) {
-  .navbar {
-    height: 68px;
-  }
+       .navbar {
+              height: 68px;
+       }
 
-  .navbar__container {
-    width: calc(100% - 1.5rem);
-  }
+       .navbar__container {
+              width: calc(100% - 1.5rem);
+       }
 
-  .navbar__logo {
-    font-size: 1.55rem;
-  }
+       .navbar__logo {
+              font-size: 1.55rem;
+       }
 
-  .navbar__account span:last-child {
-    display: none;
-  }
+       .navbar__account span:last-child {
+              display: none;
+       }
 }
 </style>
