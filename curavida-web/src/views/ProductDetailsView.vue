@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCartStore } from '../stores/cart.js'
+import { getProductBySlug } from '../services/product.service'
 
 const route = useRoute()
 const cartStore = useCartStore()
@@ -10,25 +11,15 @@ const product = ref(null)
 const loading = ref(true)
 const error = ref('')
 
-const API_URL = 'http://localhost:3000'
-
 const loadProduct = async () => {
   try {
     loading.value = true
+    error.value = ''
 
-    const response = await fetch(
-      `${API_URL}/products/${route.params.slug}`
-    )
-
-    const result = await response.json()
-
-    if (!result.success) {
-      throw new Error(result.message)
-    }
-
-    product.value = result.data
+    product.value = await getProductBySlug(route.params.slug)
   } catch (err) {
     console.error('Erro ao carregar produto:', err)
+
     error.value = 'Não foi possível carregar o produto.'
   } finally {
     loading.value = false

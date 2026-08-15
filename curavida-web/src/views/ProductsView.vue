@@ -1,41 +1,41 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { getCategories } from '../services/category.service'
 import ProductCard from '../components/cards/ProductCard.vue'
-
-const API_URL = 'http://localhost:3000'
+import { getProducts } from '../services/product.service'
 
 const products = ref([])
 const search = ref('')
 const selectedCategory = ref('Todos')
 const loading = ref(true)
 const error = ref(null)
-
-const categories = [
-       'Todos',
-       'Curativos',
-       'Estomias',
-       'Cuidados com a pele',
-]
+const categories = ref([])
 
 const fetchProducts = async () => {
        try {
               loading.value = true
               error.value = null
 
-              const response = await fetch(`${API_URL}/products`)
-
-              if (!response.ok) {
-                     throw new Error('Erro ao buscar produtos')
-              }
-
-              const result = await response.json()
-
-              products.value = result.data
+              products.value = await getProducts()
        } catch (err) {
               console.error('Erro ao carregar produtos:', err)
+
               error.value = 'Não foi possível carregar os produtos.'
        } finally {
               loading.value = false
+       }
+}
+
+const fetchCategories = async () => {
+       try {
+              const result = await getCategories()
+
+              categories.value = [
+                     { id: 'all', name: 'Todos' },
+                     ...result,
+              ]
+       } catch (err) {
+              console.error('Erro ao carregar categorias:', err)
        }
 }
 
@@ -56,6 +56,7 @@ const filteredProducts = computed(() => {
 
 onMounted(() => {
        fetchProducts()
+       fetchCategories()
 })
 </script>
 
@@ -75,10 +76,10 @@ onMounted(() => {
                      </div>
 
                      <div class="categories">
-                            <button v-for="category in categories" :key="category"
-                                   :class="{ active: selectedCategory === category }"
-                                   @click="selectedCategory = category">
-                                   {{ category }}
+                            <button v-for="category in categories" :key="category.id"
+                                   :class="{ active: selectedCategory === category.name }"
+                                   @click="selectedCategory = category.name">
+                                   {{ category.name }}
                             </button>
                      </div>
 
