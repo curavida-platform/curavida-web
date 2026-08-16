@@ -1,6 +1,5 @@
 import axios from 'axios'
-
-const API_URL = 'http://localhost:3000'
+import API_URL from './api'
 
 const authService = {
        async register(data) {

@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useCartStore } from '../stores/cart.js'
 import { useAuthStore } from '../stores/auth.js'
 import { useRouter } from 'vue-router'
+import { createOrder } from '../services/order.service.js'
 
 const cart = useCartStore()
 const authStore = useAuthStore()
@@ -50,33 +51,20 @@ const submitOrder = async () => {
     loading.value = true
     error.value = ''
 
-    const response = await fetch('http://localhost:3000/orders', {
-      method: 'POST',
-
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${authStore.token}`,
-      },
-
-      body: JSON.stringify({
+    const order = await createOrder(
+      authStore.token,
+      {
         notes: notes.value || null,
 
         items: items.value.map((item) => ({
           productId: item.id,
           quantity: item.quantity,
         })),
-      }),
-    })
+      },
+    )
 
-    const result = await response.json()
+    console.log('Pedido criado:', order)
 
-    if (!response.ok || !result.success) {
-      throw new Error(
-        result.message || 'Erro ao enviar solicitação.',
-      )
-    }
-
-    // Pedido criado com sucesso
     cart.clearCart()
 
     success.value = true

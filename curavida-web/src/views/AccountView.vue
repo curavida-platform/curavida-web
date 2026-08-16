@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth.js'
-import orderService from '../services/order.service.js'
+import { getMyOrders } from '../services/order.service.js'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -34,9 +34,7 @@ const loadOrders = async () => {
               ordersLoading.value = true
               ordersError.value = ''
 
-              const response = await orderService.getMyOrders(
-                     authStore.token,
-              )
+              const response = await getMyOrders(authStore.token)
 
               orders.value = response.data.data
        } catch (error) {
