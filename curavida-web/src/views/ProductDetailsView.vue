@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCartStore } from '../stores/cart.js'
 import { getProductBySlug } from '../services/product.service'
+import Swal from 'sweetalert2'
 
 const route = useRoute()
 const cartStore = useCartStore()
@@ -30,6 +31,17 @@ const addToCart = () => {
   if (!product.value) return
 
   cartStore.addToCart(product.value)
+
+  Swal.fire({
+    toast: true,
+    position: 'top-end',
+    icon: 'success',
+    title: 'Adicionado ao carrinho',
+    text: product.name,
+    showConfirmButton: false,
+    timer: 2200,
+    timerProgressBar: true,
+  })
 }
 
 onMounted(() => {
