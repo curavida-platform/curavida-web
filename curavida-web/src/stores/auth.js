@@ -67,6 +67,10 @@ export const useAuthStore = defineStore('auth', {
               },
 
               async fetchUser() {
+                     if (this.initialized) {
+                            return this.user
+                     }
+
                      if (!this.token) {
                             this.initialized = true
                             return null

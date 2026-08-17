@@ -17,9 +17,7 @@ onMounted(async () => {
               return
        }
 
-       if (!authStore.user) {
-              await authStore.fetchUser()
-       }
+       await authStore.fetchUser()
 
        if (!authStore.user) {
               router.push('/login')
@@ -57,7 +55,7 @@ const handleLogout = () => {
 
 <template>
        <main class="account-page">
-              <div v-if="authStore.loading" class="loading">
+              <div v-if="!authStore.initialized" class="loading">
                      Carregando sua conta...
               </div>
 
