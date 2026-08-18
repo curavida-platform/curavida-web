@@ -10,7 +10,7 @@ export const useAuthStore = defineStore('auth', {
        }),
 
        getters: {
-              isAuthenticated: (state) => !!state.token,
+              isAuthenticated: (state) => !!state.user,
 
               customer: (state) => state.user?.customer || null,
        },
@@ -77,7 +77,7 @@ export const useAuthStore = defineStore('auth', {
                      }
 
                      try {
-                            const response = await authService.getMe(this.token)
+                            const response = await authService.getMe()
 
                             this.user = response.data.data
 

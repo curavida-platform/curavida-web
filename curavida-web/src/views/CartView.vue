@@ -51,17 +51,13 @@ const submitOrder = async () => {
     loading.value = true
     error.value = ''
 
-    const order = await createOrder(
-      authStore.token,
-      {
-        notes: notes.value || null,
-
-        items: items.value.map((item) => ({
-          productId: item.id,
-          quantity: item.quantity,
-        })),
-      },
-    )
+    const order = await createOrder({
+      notes: notes.value || null,
+      items: items.value.map((item) => ({
+        productId: item.id,
+        quantity: item.quantity,
+      })),
+    })
 
     console.log('Pedido criado:', order)
 

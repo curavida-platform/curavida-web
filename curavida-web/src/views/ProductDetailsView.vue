@@ -37,7 +37,7 @@ const addToCart = () => {
     position: 'top-end',
     icon: 'success',
     title: 'Adicionado ao carrinho',
-    text: product.name,
+    text: product.value.name,
     showConfirmButton: false,
     timer: 2200,
     timerProgressBar: true,
@@ -104,7 +104,7 @@ onMounted(() => {
         </div>
 
         <strong class="price">
-          R$ {{ product.unitPrice }}
+          R$ {{ Number(product.unitPrice).toFixed(2).replace('.', ',') }}
         </strong>
 
         <button class="contact-button" type="button" @click="addToCart">

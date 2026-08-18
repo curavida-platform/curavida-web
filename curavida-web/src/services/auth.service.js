@@ -1,22 +1,9 @@
-import axios from 'axios'
-import API_URL from './api'
+import api from './api'
 
 const authService = {
-       async register(data) {
-              return axios.post(`${API_URL}/auth/register`, data)
-       },
-
-       async login(data) {
-              return axios.post(`${API_URL}/auth/login`, data)
-       },
-
-       async getMe(token) {
-              return axios.get(`${API_URL}/auth/me`, {
-                     headers: {
-                            Authorization: `Bearer ${token}`,
-                     },
-              })
-       },
+       register: (data) => api.post('/auth/register', data),
+       login: (data) => api.post('/auth/login', data),
+       getMe: () => api.get('/auth/me'), // token vai pelo interceptor agora
 }
 
 export default authService

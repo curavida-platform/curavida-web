@@ -12,12 +12,10 @@ const ordersLoading = ref(false)
 const ordersError = ref('')
 
 onMounted(async () => {
-       if (!authStore.token) {
-              router.push('/login')
-              return
+       // fetchUser já roda no guard do router, mas garantimos aqui também
+       if (!authStore.initialized) {
+              await authStore.fetchUser()
        }
-
-       await authStore.fetchUser()
 
        if (!authStore.user) {
               router.push('/login')
@@ -32,7 +30,7 @@ const loadOrders = async () => {
               ordersLoading.value = true
               ordersError.value = ''
 
-              const response = await getMyOrders(authStore.token)
+              const response = await getMyOrders()
 
               orders.value = response.data.data
        } catch (error) {
@@ -55,7 +53,7 @@ const handleLogout = () => {
 
 <template>
        <main class="account-page">
-              <div v-if="!authStore.initialized" class="loading">
+              <div v-if="!authStore.initialized || !authStore.user" class="loading">
                      Carregando sua conta...
               </div>
 
@@ -89,40 +87,27 @@ const handleLogout = () => {
                                    </div>
                             </div>
 
-                            <div class="info-grid">
-
+                            <div v-if="authStore.customer" class="info-grid">
                                    <div class="info-item">
                                           <span>Nome</span>
-
-                                          <strong>
-                                                 {{ authStore.customer?.name || '—' }}
-                                          </strong>
+                                          <strong>{{ authStore.customer.name }}</strong>
                                    </div>
-
                                    <div class="info-item">
                                           <span>E-mail</span>
-
-                                          <strong>
-                                                 {{ authStore.user.email }}
-                                          </strong>
+                                          <strong>{{ authStore.user.email }}</strong>
                                    </div>
-
                                    <div class="info-item">
                                           <span>CPF</span>
-
-                                          <strong>
-                                                 {{ authStore.customer?.cpf || '—' }}
-                                          </strong>
+                                          <strong>{{ authStore.customer.cpf || '—' }}</strong>
                                    </div>
-
                                    <div class="info-item">
                                           <span>Telefone</span>
-
-                                          <strong>
-                                                 {{ authStore.customer?.phone || '—' }}
-                                          </strong>
+                                          <strong>{{ authStore.customer.phone || '—' }}</strong>
                                    </div>
+                            </div>
 
+                            <div v-else class="loading">
+                                   Carregando informações...
                             </div>
                      </section>
 
