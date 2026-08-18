@@ -293,33 +293,7 @@ const reloadPage = () => {
 }
 
 .reload-button {
-       width: 15%;
-       display: flex;
-       align-items: center;
-       justify-content: center;
-       gap: 8px;
-
-       padding: 13px 18px;
-       border: 1px solid #ddd;
-       border-radius: 10px;
-
-       background: #fff;
-       color: #333;
-
-       font-size: 12px;
-       font-weight: 500;
-
-       cursor: pointer;
-       transition: 0.2s ease;
-}
-
-.reload-button:hover {
-       background: #f5f5f5;
-}
-
-.reload-button span {
-       font-size: 20px;
-       line-height: 1;
+       display: none;
 }
 
 .account-card {
@@ -587,6 +561,49 @@ const reloadPage = () => {
 
        .order-info {
               gap: 25px;
+       }
+}
+
+@media (max-width: 768px) {
+       .reload-button {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 8px;
+
+              width: 100%;
+              padding: 11px 18px;
+
+              border: 1px solid var(--color-border);
+              border-radius: 9px;
+
+              background: var(--color-white);
+              color: var(--color-primary);
+
+              font-family: inherit;
+              font-size: 14px;
+              font-weight: 600;
+
+              cursor: pointer;
+
+              transition:
+                     background 0.2s ease,
+                     border-color 0.2s ease,
+                     transform 0.1s ease;
+       }
+
+       .reload-button:hover {
+              background: var(--color-surface);
+              border-color: var(--color-primary);
+       }
+
+       .reload-button:active {
+              transform: scale(0.98);
+       }
+
+       .reload-button span {
+              font-size: 19px;
+              line-height: 1;
        }
 }
 
