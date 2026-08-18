@@ -49,6 +49,10 @@ const handleLogout = () => {
 
        router.push('/')
 }
+
+const reloadPage = () => {
+       window.location.reload()
+}
 </script>
 
 <template>
@@ -76,6 +80,11 @@ const handleLogout = () => {
 
                             <button type="button" class="logout-button" @click="handleLogout">
                                    Sair
+                            </button>
+
+                            <button class="reload-button" @click="reloadPage">
+                                   <span>↻</span>
+                                   Atualizar página
                             </button>
                      </div>
 
@@ -281,6 +290,36 @@ const handleLogout = () => {
 .logout-button:hover {
        border-color: #dc2626;
        color: #dc2626;
+}
+
+.reload-button {
+       width: 15%;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       gap: 8px;
+
+       padding: 13px 18px;
+       border: 1px solid #ddd;
+       border-radius: 10px;
+
+       background: #fff;
+       color: #333;
+
+       font-size: 12px;
+       font-weight: 500;
+
+       cursor: pointer;
+       transition: 0.2s ease;
+}
+
+.reload-button:hover {
+       background: #f5f5f5;
+}
+
+.reload-button span {
+       font-size: 20px;
+       line-height: 1;
 }
 
 .account-card {
