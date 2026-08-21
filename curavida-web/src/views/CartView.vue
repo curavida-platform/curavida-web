@@ -4,6 +4,7 @@ import { useCartStore } from '../stores/cart.js'
 import { useAuthStore } from '../stores/auth.js'
 import { useRouter } from 'vue-router'
 import { createOrder } from '../services/order.service.js'
+import { createPixPayment } from '../services/payment.service.js'
 
 const cart = useCartStore()
 const authStore = useAuthStore()
@@ -15,6 +16,7 @@ const showForm = ref(false)
 const loading = ref(false)
 const success = ref(false)
 const error = ref('')
+const payment = ref(null)
 
 const notes = ref('')
 
@@ -59,11 +61,25 @@ const submitOrder = async () => {
       })),
     })
 
+
     console.log('Pedido criado:', order)
+
+
+    const pix = await createPixPayment(order.id)
+
+
+    console.log('Pagamento Pix:', pix)
+
 
     cart.clearCart()
 
-    success.value = true
+    router.push({
+      name: 'payment',
+      params: {
+        orderId: order.id
+      }
+    })
+
     showForm.value = false
 
     notes.value = ''
@@ -97,6 +113,33 @@ const submitOrder = async () => {
         <RouterLink to="/produtos" class="back-button">
           Continuar vendo produtos
         </RouterLink>
+      </div>
+
+      <div v-if="payment" class="success-message">
+
+        <span class="material-symbols-outlined">
+          qr_code_2
+        </span>
+
+        <h2>
+          Pagamento Pix
+        </h2>
+
+        <p>
+          Escaneie o QR Code ou copie o código Pix.
+        </p>
+
+
+        <img :src="`data:image/png;base64,${payment.pixQrCode}`" alt="QR Code Pix" style="max-width:260px;" />
+
+
+        <textarea readonly :value="payment.pixCopyPaste" rows="5"></textarea>
+
+
+        <button class="request-button" type="button" @click="navigator.clipboard.writeText(payment.pixCopyPaste)">
+          Copiar Pix
+        </button>
+
       </div>
 
       <div class="cart-header">
