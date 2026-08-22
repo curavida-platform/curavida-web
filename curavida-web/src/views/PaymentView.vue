@@ -1,27 +1,39 @@
 <script setup>
-import { onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { createPixPayment } from '../services/payment.service.js'
+import { onMounted, onUnmounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import {
+       createPixPayment,
+       checkPaymentStatus,
+} from '../services/payment.service.js'
 
 const route = useRoute()
+const router = useRouter()
 
 const loading = ref(true)
+const checking = ref(false)
 const error = ref('')
 const payment = ref(null)
+const paid = ref(false)
+const copied = ref(false)
 
+let statusInterval = null
 
 const loadPayment = async () => {
        try {
               loading.value = true
+              error.value = ''
 
               payment.value = await createPixPayment(
                      route.params.orderId
               )
 
+              checkStatus()
        } catch (err) {
-              console.error(err)
+              console.error('Erro ao carregar pagamento:', err)
 
               error.value =
+                     err.response?.data?.message ||
+                     err.message ||
                      'Não foi possível carregar o pagamento.'
        } finally {
               loading.value = false
@@ -29,762 +41,892 @@ const loadPayment = async () => {
 }
 
 
-onMounted(loadPayment)
+const checkStatus = async () => {
+       if (!payment.value?.paymentId) {
+              return
+       }
+
+       try {
+              checking.value = true
+
+              const result = await checkPaymentStatus(
+                     route.params.orderId
+              )
+
+              payment.value.status = result.status
+
+              if (
+                     result.status === 'RECEIVED' ||
+                     result.status === 'CONFIRMED'
+              ) {
+                     paid.value = true
+
+                     stopChecking()
+              }
+       } catch (err) {
+              console.error(
+                     'Erro ao consultar status do pagamento:',
+                     err
+              )
+       } finally {
+              checking.value = false
+       }
+}
+
+
+const startChecking = () => {
+       stopChecking()
+
+       statusInterval = setInterval(() => {
+              if (!paid.value) {
+                     checkStatus()
+              }
+       }, 5000)
+}
+
+
+const stopChecking = () => {
+       if (statusInterval) {
+              clearInterval(statusInterval)
+              statusInterval = null
+       }
+}
+
+
+const copyPix = async () => {
+       if (!payment.value?.pixCopyPaste) {
+              return
+       }
+
+       try {
+              await navigator.clipboard.writeText(
+                     payment.value.pixCopyPaste
+              )
+
+              copied.value = true
+
+              setTimeout(() => {
+                     copied.value = false
+              }, 2500)
+       } catch (err) {
+              console.error(
+                     'Erro ao copiar Pix:',
+                     err
+              )
+       }
+}
+
+
+onMounted(async () => {
+       await loadPayment()
+
+       if (!paid.value) {
+              startChecking()
+       }
+})
+
+
+onUnmounted(() => {
+       stopChecking()
+})
 </script>
 
 
 <template>
-
        <main class="payment-page">
 
               <section class="payment-container">
 
+                     <!-- CARREGANDO -->
+                     <div v-if="loading" class="payment-card loading-card">
 
-                     <div class="payment-card">
+                            <span class="material-symbols-outlined loading-icon">
+                                   progress_activity
+                            </span>
+
+                            <span class="section-label">
+                                   PAGAMENTO
+                            </span>
+
+                            <h1>
+                                   Preparando seu pagamento
+                            </h1>
+
+                            <p class="description">
+                                   Estamos preparando sua cobrança Pix.
+                            </p>
+
+                     </div>
 
 
-                            <div v-if="loading" class="state">
+                     <!-- ERRO -->
+                     <div v-else-if="error" class="payment-card error-card">
 
-                                   <span class="material-symbols-outlined loader">
-                                          progress_activity
-                                   </span>
+                            <span class="material-symbols-outlined error-icon">
+                                   error
+                            </span>
 
-                                   <h2>
-                                          Gerando pagamento...
-                                   </h2>
+                            <span class="section-label">
+                                   OPA...
+                            </span>
 
-                                   <p>
-                                          Estamos preparando seu pagamento Pix.
-                                   </p>
+                            <h1>
+                                   Não foi possível carregar
+                            </h1>
 
-                            </div>
+                            <p class="description">
+                                   {{ error }}
+                            </p>
+
+                            <button type="button" class="primary-button" @click="loadPayment">
+                                   Tentar novamente
+                            </button>
+
+                     </div>
 
 
+                     <!-- PAGAMENTO CONFIRMADO -->
+                     <div v-else-if="paid" class="payment-card paid-card">
 
-                            <div v-else-if="error" class="state error">
+                            <div class="success-icon-wrapper">
 
                                    <span class="material-symbols-outlined">
-                                          error
+                                          check_circle
                                    </span>
 
-                                   <h2>
-                                          Pagamento indisponível
-                                   </h2>
+                            </div>
 
-                                   <p>
-                                          {{ error }}
-                                   </p>
+                            <span class="section-label">
+                                   PAGAMENTO CONFIRMADO
+                            </span>
+
+                            <h1>
+                                   Tudo certo!
+                            </h1>
+
+                            <p class="description">
+                                   Seu pagamento foi confirmado e seu pedido
+                                   foi aprovado.
+                            </p>
+
+
+                            <div class="payment-status confirmed">
+
+                                   <span class="material-symbols-outlined">
+                                          verified
+                                   </span>
+
+                                   <div>
+                                          <span>
+                                                 Status do pagamento
+                                          </span>
+
+                                          <strong>
+                                                 Pago
+                                          </strong>
+                                   </div>
 
                             </div>
 
 
+                            <button type="button" class="primary-button" @click="router.push('/produtos')">
+                                   Continuar
+                            </button>
 
-                            <div v-else>
-
-
-                                   <div class="header">
-
-
-                                          <div class="secure-badge">
-
-                                                 <span class="material-symbols-outlined">
-                                                        verified_user
-                                                 </span>
-
-                                                 Pagamento seguro
-
-                                          </div>
+                     </div>
 
 
-                                          <span class="section-label">
-                                                 PIX CURAVIDA
+                     <!-- PAGAMENTO PIX -->
+                     <div v-else class="payment-card">
+
+                            <div class="pix-header">
+
+                                   <div class="pix-icon-wrapper">
+
+                                          <span class="material-symbols-outlined">
+                                                 qr_code_2
                                           </span>
-
-
-                                          <h1>
-                                                 Finalize seu pedido
-                                          </h1>
-
-
-                                          <p>
-                                                 Seu pagamento será processado com segurança pelo Pix.
-                                          </p>
-
 
                                    </div>
 
+                                   <span class="section-label">
+                                          PAGAMENTO SEGURO
+                                   </span>
+
+                                   <h1>
+                                          Finalize seu pedido
+                                   </h1>
+
+                                   <p class="description">
+                                          Pague via Pix para confirmar sua solicitação.
+                                   </p>
+
+                            </div>
 
 
+                            <!-- VALOR -->
 
-                                   <div class="payment-status">
+                            <div class="value">
 
+                                   <span>
+                                          Valor do pedido
+                                   </span>
+
+                                   <strong>
+                                          R$ {{ Number(payment.value).toFixed(2).replace('.', ',') }}
+                                   </strong>
+
+                            </div>
+
+
+                            <!-- QR CODE -->
+
+                            <div class="qr-wrapper">
+
+                                   <div class="qr-area">
+
+                                          <img :src="`data:image/png;base64,${payment.pixQrCode}`" alt="QR Code Pix" />
+
+                                   </div>
+
+                                   <p>
+                                          Aponte a câmera do seu banco para o QR Code
+                                   </p>
+
+                            </div>
+
+
+                            <!-- PIX COPIA E COLA -->
+
+                            <div class="pix-code">
+
+                                   <label>
+                                          Pix Copia e Cola
+                                   </label>
+
+                                   <textarea readonly :value="payment.pixCopyPaste" rows="4" />
+
+                                   <button type="button" class="primary-button" @click="copyPix">
+
+                                          <span class="material-symbols-outlined">
+                                                 {{ copied ? 'check' : 'content_copy' }}
+                                          </span>
+
+                                          {{ copied ? 'Código copiado!' : 'Copiar código Pix' }}
+
+                                   </button>
+
+                            </div>
+
+
+                            <!-- STATUS -->
+
+                            <div class="payment-status waiting">
+
+                                   <span class="material-symbols-outlined">
+                                          schedule
+                                   </span>
+
+                                   <div>
 
                                           <span>
                                                  Status do pagamento
                                           </span>
 
-
                                           <strong>
-                                                 {{ payment.status }}
+                                                 Aguardando pagamento
                                           </strong>
 
-
                                    </div>
-
-
-
-
-                                   <div class="qr-box">
-
-
-                                          <div class="qr-header">
-
-                                                 <span class="material-symbols-outlined">
-                                                        qr_code_2
-                                                 </span>
-
-                                                 <h2>
-                                                        Escaneie o QR Code
-                                                 </h2>
-
-                                          </div>
-
-
-                                          <img :src="`data:image/png;base64,${payment.pixQrCode}`" alt="QR Code Pix" class="qr-code"/>
-
-
-                                   </div>
-
-
-
-
-
-                                   <div class="copy-area">
-
-
-                                          <label>
-                                                 Pix Copia e Cola
-                                          </label>
-
-
-                                          <textarea readonly :value="payment.pixCopyPaste" />
-
-
-
-                                          <button @click="navigator.clipboard.writeText(payment.pixCopyPaste)">
-
-                                                 <span class="material-symbols-outlined">
-                                                        content_copy
-                                                 </span>
-
-                                                 Copiar código Pix
-
-                                          </button>
-
-
-                                   </div>
-
-
-
-
-                                   <div class="security-box">
-
-
-                                          <span class="material-symbols-outlined">
-                                                 lock
-                                          </span>
-
-
-                                          <div>
-
-                                                 <strong>
-                                                        Pagamento protegido
-                                                 </strong>
-
-
-                                                 <p>
-                                                        Após a confirmação, seu pedido será atualizado automaticamente.
-                                                 </p>
-
-                                          </div>
-
-
-                                   </div>
-
-
 
                             </div>
-                     </div>
 
+
+                            <!-- VERIFICANDO -->
+
+                            <div class="checking">
+
+                                   <span class="material-symbols-outlined" :class="{ spinning: checking }">
+                                          sync
+                                   </span>
+
+                                   <span>
+                                          {{ checking
+                                                 ? 'Verificando pagamento...'
+                                          : 'Aguardando confirmação' }}
+                                   </span>
+
+                            </div>
+
+
+                            <div class="security-info">
+
+                                   <span class="material-symbols-outlined">
+                                          lock
+                                   </span>
+
+                                   <p>
+                                          Pagamento processado de forma segura pelo
+                                          <strong>Asaas</strong>.
+                                   </p>
+
+                            </div>
+
+                     </div>
 
               </section>
 
        </main>
-
 </template>
+
 
 <style scoped>
 .payment-page {
-
        min-height: 100vh;
 
        display: flex;
        justify-content: center;
 
-       padding: 80px 20px;
+       padding: 70px 20px 100px;
 
        background:
               linear-gradient(180deg,
-                     #ffffff 0%,
-                     #f6faf9 100%);
-
+                     var(--color-surface) 0%,
+                     var(--color-white) 100%);
 }
-
 
 
 .payment-container {
-
        width: 100%;
-       max-width: 560px;
-
+       max-width: 520px;
 }
 
 
+/* =========================================
+   CARD
+   ========================================= */
 
 .payment-card {
-
-
-       padding: 45px;
-
-       background: white;
-
-       border: 1px solid var(--color-border);
-
-       border-radius: 32px;
-
-       box-shadow:
-              0 20px 60px rgba(0, 0, 0, .08);
-
-}
-
-
-
-
-
-.header {
-
-       text-align: center;
-
-}
-
-
-
-.secure-badge {
-
-
-       display: inline-flex;
-
-       align-items: center;
-
-       gap: 8px;
-
-
-       padding: 8px 16px;
-
-
-       border-radius: 999px;
-
-
-       background: #eef9f4;
-
-
-       color: var(--color-primary);
-
-
-       font-size: 13px;
-
-       font-weight: 700;
-
-
-       margin-bottom: 25px;
-
-
-}
-
-
-
-.secure-badge span {
-
-       font-size: 18px;
-
-}
-
-
-
-
-
-.header h1 {
-
-
-       margin: 15px 0;
-
-
-       font-family: var(--font-display);
-
-       font-size: 34px;
-
-
-       color: var(--color-text);
-
-}
-
-
-
-.header p {
-
-       color: var(--color-text-light);
-
-       line-height: 1.6;
-
-}
-
-
-
-
-
-.payment-status {
-
-
-       margin: 35px 0;
-
-
-       padding: 18px;
-
-
-       display: flex;
-
-       justify-content: space-between;
-
-       align-items: center;
-
-
-       background: #f8faf9;
-
-
-       border-radius: 18px;
-
-
-}
-
-
-
-.payment-status span {
-
-       color: var(--color-text-light);
-
-       font-size: 14px;
-
-}
-
-
-
-.payment-status strong {
-
-
-       padding: 7px 18px;
-
-
-       border-radius: 999px;
-
-
-       background: #fff3cd;
-
-
-       color: #856404;
-
-
-       font-size: 13px;
-
-
-}
-
-
-
-
-.qr-box {
-
-
-       padding: 25px;
-
-
-       border-radius: 25px;
-
-
-       background: #fafafa;
-
-
-       border: 1px solid var(--color-border);
-
-
-       text-align: center;
-
-
-}
-
-
-
-.qr-code{
-       margin-left: 78px;
-       width: 260px;
-       height: 260px;
-
-}
-
-
-
-.qr-header {
-
-
-       display: flex;
-
-       justify-content: center;
-
-       align-items: center;
-
-       gap: 10px;
-
-
-       margin-bottom: 20px;
-
-
-}
-
-
-
-.qr-header span {
-
-       color: var(--color-primary);
-
-       font-size: 30px;
-
-}
-
-
-
-.qr-header h2 {
-
-       margin: 0;
-
-       font-size: 18px;
-
-       color: var(--color-text);
-
-}
-
-
-
-
-
-.qr-box img {
-
-
-       width: 260px;
-
-       height: 260px;
-
-
-       padding: 15px;
-
-
-       background: white;
-
-
-       border-radius: 20px;
-
-
-}
-
-
-
-
-
-.copy-area {
-
-
-       margin-top: 30px;
-
-
-       text-align: left;
-
-
-}
-
-
-
-.copy-area label {
-
-
-       display: block;
-
-       margin-bottom: 10px;
-
-
-       font-size: 14px;
-
-       font-weight: 700;
-
-
-       color: var(--color-text);
-
-}
-
-
-
-
-.copy-area textarea {
-
-
        width: 100%;
-
-
-       height: 100px;
-
-
-       padding: 15px;
-
 
        box-sizing: border-box;
 
+       padding: 42px 36px;
 
-       resize: none;
-
-
-       border-radius: 16px;
-
+       text-align: center;
 
        border: 1px solid var(--color-border);
+       border-radius: var(--radius-lg);
 
+       background: var(--color-white);
 
-       font-size: 12px;
-
-
+       box-shadow: var(--shadow-md);
 }
 
 
+/* =========================================
+   HEADER
+   ========================================= */
 
+.section-label {
+       display: block;
 
-.copy-area button {
+       margin-top: 12px;
 
+       color: var(--color-primary);
 
-       margin-top: 15px;
-
-
-       width: 100%;
-
-
-       height: 52px;
-
-
-       border: none;
-
-
-       border-radius: 999px;
-
-
-       background: var(--color-primary);
-
-
-       color: white;
-
-
+       font-size: 11px;
        font-weight: 700;
 
+       letter-spacing: 1.6px;
+}
 
-       font-size: 15px;
+
+.payment-card h1 {
+       margin: 10px 0;
+
+       color: var(--color-text);
+
+       font-family: var(--font-display);
+
+       font-size: 31px;
+       font-weight: 600;
+}
 
 
-       cursor: pointer;
+.description {
+       margin: 0 auto;
 
+       max-width: 420px;
+
+       color: var(--color-text-light);
+
+       font-size: 14px;
+
+       line-height: 1.7;
+}
+
+
+/* =========================================
+   PIX ICON
+   ========================================= */
+
+.pix-icon-wrapper,
+.success-icon-wrapper {
+       width: 64px;
+       height: 64px;
 
        display: flex;
-
        align-items: center;
+       justify-content: center;
 
+       margin: 0 auto;
+
+       border-radius: 50%;
+
+       background: var(--color-surface);
+}
+
+
+.pix-icon-wrapper span {
+       font-size: 34px;
+
+       color: var(--color-primary);
+}
+
+
+.success-icon-wrapper {
+       background: var(--color-surface);
+}
+
+
+.success-icon-wrapper span {
+       font-size: 38px;
+
+       color: var(--color-primary);
+}
+
+
+/* =========================================
+   VALOR
+   ========================================= */
+
+.value {
+       display: flex;
+       flex-direction: column;
+
+       gap: 5px;
+
+       margin: 30px 0 25px;
+
+       padding: 18px;
+
+       border-radius: var(--radius-md);
+
+       background: var(--color-surface);
+}
+
+
+.value span {
+       color: var(--color-text-light);
+
+       font-size: 13px;
+}
+
+
+.value strong {
+       color: var(--color-text);
+
+       font-size: 28px;
+}
+
+
+/* =========================================
+   QR CODE
+   ========================================= */
+
+.qr-wrapper {
+       margin: 25px 0;
+}
+
+
+.qr-area {
+       width: 260px;
+       height: 260px;
+
+       display: flex;
+       align-items: center;
+       justify-content: center;
+
+       box-sizing: border-box;
+
+       margin: 0 auto;
+
+       padding: 12px;
+
+       border: 1px solid var(--color-border);
+
+       border-radius: var(--radius-md);
+
+       background: var(--color-white);
+}
+
+
+.qr-area img {
+       display: block;
+
+       width: 100%;
+       height: 100%;
+
+       object-fit: contain;
+}
+
+
+.qr-wrapper p {
+       margin: 12px 0 0;
+
+       color: var(--color-text-light);
+
+       font-size: 12px;
+}
+
+
+/* =========================================
+   COPIA E COLA
+   ========================================= */
+
+.pix-code {
+       margin-top: 25px;
+
+       text-align: left;
+}
+
+
+.pix-code label {
+       display: block;
+
+       margin-bottom: 8px;
+
+       color: var(--color-text);
+
+       font-size: 13px;
+       font-weight: 700;
+}
+
+
+.pix-code textarea {
+       width: 100%;
+
+       box-sizing: border-box;
+
+       padding: 13px;
+
+       resize: none;
+
+       border: 1px solid var(--color-border);
+       border-radius: var(--radius-md);
+
+       background: var(--color-surface);
+
+       color: var(--color-text-light);
+
+       font-family: monospace;
+
+       font-size: 11px;
+
+       line-height: 1.5;
+
+       outline: none;
+}
+
+
+/* =========================================
+   BOTÃO
+   ========================================= */
+
+.primary-button {
+       width: 100%;
+
+       min-height: 50px;
+
+       display: flex;
+       align-items: center;
        justify-content: center;
 
        gap: 8px;
 
+       margin-top: 12px;
 
-       transition: .2s;
+       padding: 0 20px;
 
+       border: none;
 
+       border-radius: var(--radius-full);
+
+       background: var(--color-primary);
+
+       color: var(--color-white);
+
+       font-family: var(--font-primary);
+
+       font-size: 14px;
+       font-weight: 700;
+
+       cursor: pointer;
+
+       transition:
+              background var(--transition-fast),
+              transform var(--transition-fast),
+              box-shadow var(--transition-fast);
 }
 
 
-
-.copy-area button:hover {
-
-
+.primary-button:hover {
        background: var(--color-primary-dark);
 
-       transform: translateY(-2px);
+       transform: translateY(-1px);
 
+       box-shadow: var(--shadow-md);
 }
 
 
+.primary-button span {
+       font-size: 19px;
+}
 
 
+/* =========================================
+   STATUS
+   ========================================= */
 
-.security-box {
-
-
-       margin-top: 30px;
-
-
-       padding: 18px;
-
-
+.payment-status {
        display: flex;
 
-       gap: 15px;
+       align-items: center;
 
+       gap: 12px;
 
-       background: #f8faf9;
+       margin-top: 25px;
 
-
-       border-radius: 18px;
-
+       padding: 15px;
 
        text-align: left;
 
-
+       border-radius: var(--radius-md);
 }
 
 
-
-.security-box span {
-
-       color: var(--color-primary);
-
+.payment-status>span {
+       font-size: 25px;
 }
 
 
+.payment-status div {
+       display: flex;
+       flex-direction: column;
 
-.security-box strong {
+       gap: 3px;
+}
 
+
+.payment-status div span {
+       color: var(--color-text-light);
+
+       font-size: 11px;
+}
+
+
+.payment-status strong {
        color: var(--color-text);
 
+       font-size: 14px;
 }
 
 
+.payment-status.waiting {
+       background: var(--color-surface);
+}
 
-.security-box p {
 
-       margin: 5px 0 0;
+.payment-status.waiting>span {
+       color: var(--color-primary);
+}
 
 
-       font-size: 13px;
+.payment-status.confirmed {
+       background: var(--color-surface);
+}
 
+
+.payment-status.confirmed>span {
+       color: var(--color-primary);
+}
+
+
+/* =========================================
+   VERIFICAÇÃO
+   ========================================= */
+
+.checking {
+       display: flex;
+
+       align-items: center;
+       justify-content: center;
+
+       gap: 7px;
+
+       margin-top: 18px;
 
        color: var(--color-text-light);
 
-
-       line-height: 1.5;
-
+       font-size: 12px;
 }
 
 
-
-
-
-.state {
-
-       text-align: center;
-
+.checking span:first-child {
+       font-size: 17px;
 }
 
 
-
-.state span {
-
-       font-size: 50px;
-
-       color: var(--color-primary);
-
-}
-
-
-
-.state h2 {
-
-       color: var(--color-text);
-
-}
-
-
-
-.state p {
-
-       color: var(--color-text-light);
-
-}
-
-
-
-
-
-.loader {
-
+.spinning {
        animation: spin 1s linear infinite;
-
 }
-
 
 
 @keyframes spin {
-
        from {
-              transform: rotate(0);
+              transform: rotate(0deg);
        }
 
        to {
               transform: rotate(360deg);
        }
+}
+
+
+/* =========================================
+   SEGURANÇA
+   ========================================= */
+
+.security-info {
+       display: flex;
+
+       align-items: center;
+       justify-content: center;
+
+       gap: 8px;
+
+       margin-top: 25px;
+       padding-top: 20px;
+
+       border-top: 1px solid var(--color-border);
+}
+
+
+.security-info span {
+       color: var(--color-primary);
+
+       font-size: 18px;
+}
+
+
+.security-info p {
+       margin: 0;
+
+       color: var(--color-text-light);
+
+       font-size: 11px;
+
+       line-height: 1.5;
+}
+
+
+/* =========================================
+   LOADING / ERROR
+   ========================================= */
+
+.loading-icon {
+       display: block;
+
+       margin-bottom: 10px;
+
+       color: var(--color-primary);
+
+       font-size: 45px;
+
+       animation: spin 1s linear infinite;
+}
+
+
+.error-icon {
+       color: #c46f78;
+
+       font-size: 50px;
+}
+
+
+.error-card .section-label {
+       color: #c46f78;
+}
+
+
+.error-card .primary-button {
+       margin-top: 25px;
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 600px) {
+
+       .payment-page {
+              padding: 35px 15px 60px;
+       }
+
+
+       .payment-card {
+              padding: 32px 20px;
+
+              border-radius: var(--radius-md);
+       }
+
+
+       .payment-card h1 {
+              font-size: 26px;
+       }
+
+
+       .qr-area {
+              width: min(260px, 75vw);
+              height: min(260px, 75vw);
+       }
+
+
+       .value strong {
+              font-size: 25px;
+       }
 
 }
 
 
-
-
-@media(max-width:600px) {
-       .qr-code {
-              margin-left: 0;
-       }
+@media (max-width: 380px) {
 
        .payment-card {
-
-              padding: 30px 20px;
-
-              border-radius: 24px;
-
+              padding: 28px 16px;
        }
 
 
-       .header h1 {
-
-              font-size: 28px;
-
+       .payment-card h1 {
+              font-size: 24px;
        }
 
 
-       .qr-box img {
-
-              width: 220px;
-
-              height: 220px;
-
+       .qr-area {
+              width: 230px;
+              height: 230px;
        }
-
 
 }
 </style>
