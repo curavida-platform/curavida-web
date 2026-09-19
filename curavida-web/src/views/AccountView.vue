@@ -11,6 +11,75 @@ const orders = ref([])
 const ordersLoading = ref(false)
 const ordersError = ref('')
 
+const editingProfile = ref(false)
+const savingProfile = ref(false)
+const profileError = ref('')
+const profileSuccess = ref('')
+
+const profileForm = ref({
+       name: '',
+       phone: '',
+       cep: '',
+       street: '',
+       number: '',
+       complement: '',
+       neighborhood: '',
+       city: '',
+       state: '',
+       reference: '',
+})
+
+const fillProfileForm = () => {
+       const customer = authStore.customer
+
+       if (!customer) return
+
+       profileForm.value = {
+              name: customer.name || '',
+              phone: customer.phone || '',
+              cep: customer.cep || '',
+              street: customer.street || '',
+              number: customer.number || '',
+              complement: customer.complement || '',
+              neighborhood: customer.neighborhood || '',
+              city: customer.city || '',
+              state: customer.state || '',
+              reference: customer.reference || '',
+       }
+}
+
+const handleSaveProfile = async () => {
+       try {
+              savingProfile.value = true
+              profileError.value = ''
+              profileSuccess.value = ''
+
+              await authStore.updateProfile({
+                     name: profileForm.value.name,
+                     phone: profileForm.value.phone,
+                     cep: profileForm.value.cep,
+                     street: profileForm.value.street,
+                     number: profileForm.value.number,
+                     complement: profileForm.value.complement,
+                     neighborhood: profileForm.value.neighborhood,
+                     city: profileForm.value.city,
+                     state: profileForm.value.state,
+                     reference: profileForm.value.reference,
+              })
+
+              profileSuccess.value = 'Perfil atualizado com sucesso.'
+              editingProfile.value = false
+       } catch (error) {
+              console.error('Erro ao atualizar perfil:', error)
+
+              profileError.value =
+                     error.response?.data?.message ||
+                     'Não foi possível atualizar seu perfil.'
+       } finally {
+              savingProfile.value = false
+       }
+}
+
 onMounted(async () => {
        // fetchUser já roda no guard do router, mas garantimos aqui também
        if (!authStore.initialized) {
@@ -21,6 +90,8 @@ onMounted(async () => {
               router.push('/login')
               return
        }
+
+       fillProfileForm()
 
        await loadOrders()
 })
@@ -94,9 +165,14 @@ const reloadPage = () => {
                                           <h2>Informações pessoais</h2>
                                           <p>Dados cadastrados na sua conta.</p>
                                    </div>
+
+                                   <button v-if="!editingProfile" type="button" class="edit-profile-button"
+                                          @click="editingProfile = true">
+                                          Editar perfil
+                                   </button>
                             </div>
 
-                            <div v-if="authStore.customer" class="info-grid">
+                            <div v-if="authStore.customer && !editingProfile" class="info-grid">
                                    <div class="info-item">
                                           <span>Nome</span>
                                           <strong>{{ authStore.customer.name }}</strong>
@@ -115,9 +191,243 @@ const reloadPage = () => {
                                    </div>
                             </div>
 
-                            <div v-else class="loading">
-                                   Carregando informações...
+                            <div v-if="authStore.customer && !editingProfile" class="address-display">
+                                   <div class="address-display-header">
+                                          <div>
+                                                 <h3>Endereço de entrega</h3>
+                                                 <p>Local onde seus pedidos serão entregues.</p>
+                                          </div>
+                                   </div>
+
+                                   <div class="address-grid">
+
+                                          <div class="info-item">
+                                                 <span>CEP</span>
+                                                 <strong>
+                                                        {{ authStore.customer.cep || '—' }}
+                                                 </strong>
+                                          </div>
+
+                                          <div class="info-item">
+                                                 <span>Rua</span>
+                                                 <strong>
+                                                        {{ authStore.customer.street || '—' }}
+                                                 </strong>
+                                          </div>
+
+                                          <div class="info-item">
+                                                 <span>Número</span>
+                                                 <strong>
+                                                        {{ authStore.customer.number || '—' }}
+                                                 </strong>
+                                          </div>
+
+                                          <div class="info-item">
+                                                 <span>Complemento</span>
+                                                 <strong>
+                                                        {{ authStore.customer.complement || '—' }}
+                                                 </strong>
+                                          </div>
+
+                                          <div class="info-item">
+                                                 <span>Bairro</span>
+                                                 <strong>
+                                                        {{ authStore.customer.neighborhood || '—' }}
+                                                 </strong>
+                                          </div>
+
+                                          <div class="info-item">
+                                                 <span>Cidade</span>
+                                                 <strong>
+                                                        {{ authStore.customer.city || '—' }}
+                                                 </strong>
+                                          </div>
+
+                                          <div class="info-item">
+                                                 <span>Estado</span>
+                                                 <strong>
+                                                        {{ authStore.customer.state || '—' }}
+                                                 </strong>
+                                          </div>
+
+                                          <div class="info-item">
+                                                 <span>Ponto de referência</span>
+                                                 <strong>
+                                                        {{ authStore.customer.reference || '—' }}
+                                                 </strong>
+                                          </div>
+
+                                   </div>
                             </div>
+
+                            <form v-if="editingProfile" class="profile-form" @submit.prevent="handleSaveProfile">
+                                   <div class="form-grid">
+
+                                          <div class="form-group">
+                                                 <label for="profile-name">
+                                                        Nome
+                                                 </label>
+
+                                                 <input id="profile-name" v-model="profileForm.name" type="text"
+                                                        autocomplete="name" required />
+                                          </div>
+
+                                          <div class="form-group">
+                                                 <label for="profile-phone">
+                                                        Telefone
+                                                 </label>
+
+                                                 <input id="profile-phone" v-model="profileForm.phone" type="tel"
+                                                        autocomplete="tel" />
+                                          </div>
+
+                                   </div>
+
+                                   <div class="form-grid">
+
+                                          <div class="form-group">
+                                                 <label for="profile-email">
+                                                        E-mail
+                                                 </label>
+
+                                                 <input id="profile-email" :value="authStore.user.email" type="email"
+                                                        disabled />
+                                          </div>
+
+                                          <div class="form-group">
+                                                 <label for="profile-cpf">
+                                                        CPF
+                                                 </label>
+
+                                                 <input id="profile-cpf" :value="authStore.customer.cpf || ''"
+                                                        type="text" disabled />
+                                          </div>
+
+                                   </div>
+
+                                   <div class="address-section">
+                                          <div class="address-title">
+                                                 <h3>Endereço de entrega</h3>
+                                                 <p>
+                                                        Informe o endereço onde seus pedidos deverão ser entregues.
+                                                 </p>
+                                          </div>
+
+                                          <div class="form-grid">
+
+                                                 <div class="form-group">
+                                                        <label for="profile-cep">
+                                                               CEP
+                                                        </label>
+
+                                                        <input id="profile-cep" v-model="profileForm.cep" type="text"
+                                                               inputmode="numeric" autocomplete="postal-code"
+                                                               placeholder="00000-000" />
+                                                 </div>
+
+                                                 <div class="form-group">
+                                                        <label for="profile-state">
+                                                               Estado
+                                                        </label>
+
+                                                        <input id="profile-state" v-model="profileForm.state"
+                                                               type="text" maxlength="2" autocomplete="address-level1"
+                                                               placeholder="CE" />
+                                                 </div>
+
+                                          </div>
+
+                                          <div class="form-grid">
+
+                                                 <div class="form-group form-group-wide">
+                                                        <label for="profile-street">
+                                                               Rua
+                                                        </label>
+
+                                                        <input id="profile-street" v-model="profileForm.street"
+                                                               type="text" autocomplete="street-address"
+                                                               placeholder="Nome da rua" />
+                                                 </div>
+
+                                                 <div class="form-group">
+                                                        <label for="profile-number">
+                                                               Número
+                                                        </label>
+
+                                                        <input id="profile-number" v-model="profileForm.number"
+                                                               type="text" autocomplete="address-line2"
+                                                               placeholder="123" />
+                                                 </div>
+
+                                          </div>
+
+                                          <div class="form-grid">
+
+                                                 <div class="form-group">
+                                                        <label for="profile-neighborhood">
+                                                               Bairro
+                                                        </label>
+
+                                                        <input id="profile-neighborhood"
+                                                               v-model="profileForm.neighborhood" type="text"
+                                                               autocomplete="address-level3" placeholder="Centro" />
+                                                 </div>
+
+                                                 <div class="form-group">
+                                                        <label for="profile-city">
+                                                               Cidade
+                                                        </label>
+
+                                                        <input id="profile-city" v-model="profileForm.city" type="text"
+                                                               autocomplete="address-level2" placeholder="Fortaleza" />
+                                                 </div>
+
+                                          </div>
+
+                                          <div class="form-grid">
+
+                                                 <div class="form-group">
+                                                        <label for="profile-complement">
+                                                               Complemento
+                                                        </label>
+
+                                                        <input id="profile-complement" v-model="profileForm.complement"
+                                                               type="text" autocomplete="address-line2"
+                                                               placeholder="Apto, bloco, sala..." />
+                                                 </div>
+
+                                                 <div class="form-group">
+                                                        <label for="profile-reference">
+                                                               Ponto de referência
+                                                        </label>
+
+                                                        <input id="profile-reference" v-model="profileForm.reference"
+                                                               type="text" placeholder="Próximo à..." />
+                                                 </div>
+
+                                          </div>
+                                   </div>
+
+                                   <div v-if="profileError" class="profile-message profile-error">
+                                          {{ profileError }}
+                                   </div>
+
+                                   <div v-if="profileSuccess" class="profile-message profile-success">
+                                          {{ profileSuccess }}
+                                   </div>
+
+                                   <div class="form-actions">
+
+                                          <button type="button" class="cancel-button" @click="editingProfile = false">
+                                                 Cancelar
+                                          </button>
+
+                                          <button type="submit" class="save-profile-button" :disabled="savingProfile">
+                                                 {{ savingProfile ? 'Salvando...' : 'Salvar alterações' }}
+                                          </button>
+
+                                   </div>
+                            </form>
                      </section>
 
                      <section class="account-card">
@@ -307,6 +617,10 @@ const reloadPage = () => {
 }
 
 .card-header {
+       display: flex;
+       align-items: flex-start;
+       justify-content: space-between;
+       gap: 20px;
        margin-bottom: 22px;
 }
 
@@ -322,6 +636,189 @@ const reloadPage = () => {
 
        color: var(--color-muted);
        font-size: 13px;
+}
+
+.edit-profile-button {
+       padding: 9px 14px;
+       border: 1px solid var(--color-primary);
+       border-radius: 8px;
+       background: transparent;
+       color: var(--color-primary);
+       font-family: inherit;
+       font-size: 13px;
+       font-weight: 600;
+       cursor: pointer;
+       transition: 0.2s ease;
+}
+
+.edit-profile-button:hover {
+       background: var(--color-primary);
+       color: var(--color-white);
+}
+
+.address-section {
+       margin-top: 28px;
+       padding-top: 24px;
+       border-top: 1px solid var(--color-border);
+}
+
+.address-title {
+       margin-bottom: 18px;
+}
+
+.address-title h3 {
+       margin: 0 0 5px;
+       color: var(--color-text);
+       font-size: 16px;
+}
+
+.address-title p {
+       margin: 0;
+       color: var(--color-muted);
+       font-size: 13px;
+}
+
+.profile-form {
+       display: flex;
+       flex-direction: column;
+       gap: 20px;
+}
+
+.form-grid {
+       display: grid;
+       grid-template-columns: 1fr 1fr;
+       gap: 16px;
+}
+
+.form-group {
+       display: flex;
+       flex-direction: column;
+       gap: 7px;
+}
+
+.form-group-wide {
+       grid-column: span 1;
+}
+
+.form-group label {
+       color: var(--color-text);
+       font-size: 12px;
+       font-weight: 600;
+}
+
+.form-group input {
+       width: 100%;
+       padding: 11px 12px;
+       border: 1px solid var(--color-border);
+       border-radius: 8px;
+       background: var(--color-white);
+       color: var(--color-text);
+       font-family: inherit;
+       font-size: 14px;
+       outline: none;
+       transition: border-color 0.2s ease, box-shadow 0.2s ease;
+       box-sizing: border-box;
+}
+
+.form-group input:focus {
+       border-color: var(--color-primary);
+       box-shadow: 0 0 0 3px rgba(21, 92, 92, 0.08);
+}
+
+.form-group input:disabled {
+       background: var(--color-surface);
+       color: var(--color-muted);
+       cursor: not-allowed;
+}
+
+.form-actions {
+       display: flex;
+       justify-content: flex-end;
+       gap: 10px;
+       padding-top: 4px;
+}
+
+.cancel-button,
+.save-profile-button {
+       padding: 10px 16px;
+       border-radius: 8px;
+       font-family: inherit;
+       font-size: 13px;
+       font-weight: 600;
+       cursor: pointer;
+       transition: 0.2s ease;
+}
+
+.cancel-button {
+       border: 1px solid var(--color-border);
+       background: var(--color-white);
+       color: var(--color-text);
+}
+
+.cancel-button:hover {
+       background: var(--color-surface);
+}
+
+.save-profile-button {
+       border: 1px solid var(--color-primary);
+       background: var(--color-primary);
+       color: var(--color-white);
+}
+
+.save-profile-button:hover {
+       opacity: 0.9;
+}
+
+.save-profile-button:disabled {
+       opacity: 0.6;
+       cursor: not-allowed;
+}
+
+.profile-message {
+       padding: 11px 13px;
+       border-radius: 8px;
+       font-size: 13px;
+       line-height: 1.4;
+}
+
+.profile-error {
+       border: 1px solid #fecaca;
+       background: #fef2f2;
+       color: #b91c1c;
+}
+
+.profile-success {
+       border: 1px solid #bbf7d0;
+       background: #f0fdf4;
+       color: #15803d;
+}
+
+.address-display {
+       margin-top: 24px;
+       padding-top: 24px;
+       border-top: 1px solid var(--color-border);
+}
+
+.address-display-header {
+       margin-bottom: 18px;
+}
+
+.address-display-header h3 {
+       margin: 0 0 5px;
+       color: var(--color-text);
+       font-size: 16px;
+}
+
+.address-display-header p {
+       margin: 0;
+       color: var(--color-muted);
+       font-size: 13px;
+}
+
+.address-grid {
+       display: grid;
+       grid-template-columns: repeat(2, 1fr);
+       gap: 18px;
 }
 
 .info-grid {
@@ -623,6 +1120,23 @@ const reloadPage = () => {
        }
 
        .info-grid {
+              grid-template-columns: 1fr;
+       }
+
+       .form-grid {
+              grid-template-columns: 1fr;
+       }
+
+       .form-actions {
+              flex-direction: column-reverse;
+       }
+
+       .cancel-button,
+       .save-profile-button {
+              width: 100%;
+       }
+
+       .address-grid {
               grid-template-columns: 1fr;
        }
 }

@@ -96,6 +96,20 @@ export const useAuthStore = defineStore('auth', {
                      }
               },
 
+              async updateProfile(data) {
+                     this.loading = true
+
+                     try {
+                            const response = await authService.updateMe(data)
+
+                            this.user = response.data.data
+
+                            return this.user
+                     } finally {
+                            this.loading = false
+                     }
+              },
+
               logout() {
                      this.user = null
                      this.token = null
